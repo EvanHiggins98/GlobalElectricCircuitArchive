@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+    <head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'groundstation/csvFiles.css' %}">
+    <script type="text/javascript" src="{% static 'groundstation/csvFiles.js' %}"></script>
+    <title>CSV Files</title>
+    </head>
+    <body>
+      <div class="download_grid">
+        {% for card in tableCards %}
+        <div class = "download_card">
+          <form action="/downloadFile/" method="get">
+            <h2>{{card.name}}</h2>
+            <span>{{card.description}}</span><br>
+            <input type="submit" value="Download"><br><br>
+            <label for="mcu_id">mcuID: </lable>
+            <select id="mcu_id" name="mcu_id">
+              {% for option in mcuIDs %}
+              <option value="{{option}}">{{option}}</option>
+              {% endfor %}
+            </select><br>
+            <input type="checkbox" id="use_time_frame_{{card.name}}" name = "use_time_frame" onclick="use_time_frame_clicked('{{card.name}}')">
+            <label for="use_time_frame_{{card.name}}">Filter by Time</lable><br>
+            <div id="time_frame_{{card.name}}" hidden>
+              <div>
+                Start at: 
+                <input type="date" id="windowStartAtDate" name="windowStartAtDate" value="{{ filterOptions.windowStartAtDate }}">
+                <select id="windowStartAtHour" name="windowStartAtHour">
+                {% for option in hours %}<option value="{{ option }}"{% if filterOptions.windowStartAtHour == option %} selected{% endif %}>{{ option }}</option>
+                {% endfor %}</select>
+                :<select id="windowStartAtMinute" name="windowStartAtMinute">
+                {% for option in minutes %}<option value="{{ option }}"{% if filterOptions.windowStartAtMinute == option %} selected{% endif %}>{{ option }}</option>
+                {% endfor %}</select>
+                :<select id="windowStartAtSecond" name="windowStartAtSecond">
+                {% for option in seconds %}<option value="{{ option }}"{% if filterOptions.windowStartAtSecond == option %} selected{% endif %}>{{ option }}</option>
+                {% endfor %}</select>
+              </div>
+              <div>
+                End at: 
+                <input type="date" id="windowEndAtDate" name="windowEndAtDate" value="{{ filterOptions.windowEndAtDate }}">
+                <select id="windowEndAtHour" name="windowEndAtHour">
+                {% for option in hours %}<option value="{{ option }}"{% if filterOptions.windowEndAtHour == option %} selected{% endif %}>{{ option }}</option>
+                {% endfor %}</select>
+                :<select id="windowEndAtMinute" name="windowEndAtMinute">
+                {% for option in minutes %}<option value="{{ option }}"{% if filterOptions.windowEndAtMinute == option %} selected{% endif %}>{{ option }}</option>
+                {% endfor %}</select>
+                :<select id="windowEndAtSecond" name="windowEndAtSecond">
+                {% for option in seconds %}<option value="{{ option }}"{% if filterOptions.windowEndAtSecond == option %} selected{% endif %}>{{ option }}</option>
+                {% endfor %}</select>
+              </div>
+            </div>
+            <textarea id="requestedData" name="requestedData" value={{card.table}} hidden>{{card.table}}</textarea>
+          </form>
+          {% comment %} <a href="/downloadFile/?requestedData={{card.table}}"><button>Download</button></a> {% endcomment %}
+          <h3>Table Contents:</h3>
+          <ul>
+            {%for item in card.items%}
+            <li>{{item}}</li>
+            {%endfor%}
+          </ul>
+        </div>
+        {%endfor%}
+      </div>
+    </body>
+</html>

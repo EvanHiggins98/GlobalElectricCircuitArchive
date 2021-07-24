@@ -1,0 +1,848 @@
+<!doctype html>
+<html>
+	<head>
+		{% load static %}
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			google.charts.load("current", {packages:["corechart"]});
+		</script>
+		<link rel="stylesheet" type="text/css" href="{% static 'groundstation/v2_dashboard.css' %}">
+		<script type="text/javascript" src="{% static 'groundstation/v2_dashboard.js' %}"></script>
+		<script type="text/javascript">
+			{% if last_packet_time != 'None' %} newestPacketTime = new {{last_packet_time}} {% endif %}
+		</script>
+		<script type="text/javascript">
+			google.setOnLoadCallback(prepareCharts);
+			{% if IMEI != 'None' %} IMEI = {{IMEI}} {% endif %}
+			{% if mcuID != 'None' %} mcuID = {{mcuID}} {% endif %}
+			
+			chartsPrepared = false
+			if(localStorage.getItem("LastOpen")===null){
+				localStorage.setItem("LastOpen", JSON.stringify([null,null,null,null]))
+			}
+
+			{% for chartdataName, chartValName in charts.items %}
+			var {{chartdataName}}_data = {}
+			var {{chartdataName}}_options = {}
+			var {{chartdataName}}_json = {}
+			{%endfor%}
+			function prepareCharts(){
+				if(!chartsPrepared){
+					{% for chartName,chartVal in charts.items %}
+					{{chartName}}_json = {{ chartVal.get_data_json|safe }}
+					{{chartName}}_data = google.visualization.arrayToDataTable({{ chartVal.get_data_json|safe }});
+					{% if chartVal.get_options_json %}
+					{{chartName}}_options = {{chartVal.get_options_json|safe}}
+					{% else %}
+					{{chartName}}_options = {}
+					{% endif %}
+
+					{% endfor %}
+					chartsPrepared = true
+				}
+				if(localStorage.getItem("LastOpen") !== null){
+					lastOpen = JSON.parse(localStorage.getItem("LastOpen"))
+					if(lastOpen[mcuID-1]!==null){
+						document.getElementById(lastOpen[mcuID-1]).click();
+					}
+					else{
+						document.getElementById("MainTab").click();
+					}
+				}
+				else{
+					document.getElementById("MainTab").click();
+				}
+			}
+			
+		</script>
+	</head>
+	<body>
+		<div class="navigation">
+			<a href="https://gec.evanhiggins.net">Homepage</a>
+		</div>
+		<div class="Device_Identifier_Border" style="background-color: {{identifier_color}}">
+			<span class="Device_Identifier">
+				{% if IMEI != 'None' %} IMEI: {{IMEI}} {% endif %}
+				||
+				{% if mcuID != 'None' %} mcuID: {{mcuID}} {% endif %}
+			</span>
+		</div>
+		<form class="timeControls">
+			<div class='TimeWindowControls'>
+				Data Time Frame (UTC): <br>
+				<div style="margin-left: 40px;">
+					Start at: 
+					<input type="date" id="windowStartAtDate" name="windowStartAtDate" value="{{ filterOptions.windowStartAtDate }}">
+					<select id="windowStartAtHour" name="windowStartAtHour">
+					{% for option in hours %}<option value="{{ option }}"{% if filterOptions.windowStartAtHour == option %} selected{% endif %}>{{ option }}</option>
+					{% endfor %}</select>
+					:<select id="windowStartAtMinute" name="windowStartAtMinute">
+					{% for option in minutes %}<option value="{{ option }}"{% if filterOptions.windowStartAtMinute == option %} selected{% endif %}>{{ option }}</option>
+					{% endfor %}</select>
+					:<select id="windowStartAtSecond" name="windowStartAtSecond">
+					{% for option in seconds %}<option value="{{ option }}"{% if filterOptions.windowStartAtSecond == option %} selected{% endif %}>{{ option }}</option>
+					{% endfor %}</select>
+				</div>
+				<div style="margin-left: 40px;">
+					End at: 
+					<input type="date" id="windowEndAtDate" name="windowEndAtDate" value="{{ filterOptions.windowEndAtDate }}">
+					<select id="windowEndAtHour" name="windowEndAtHour">
+					{% for option in hours %}<option value="{{ option }}"{% if filterOptions.windowEndAtHour == option %} selected{% endif %}>{{ option }}</option>
+					{% endfor %}</select>
+					:<select id="windowEndAtMinute" name="windowEndAtMinute">
+					{% for option in minutes %}<option value="{{ option }}"{% if filterOptions.windowEndAtMinute == option %} selected{% endif %}>{{ option }}</option>
+					{% endfor %}</select>
+					:<select id="windowEndAtSecond" name="windowEndAtSecond">
+					{% for option in seconds %}<option value="{{ option }}"{% if filterOptions.windowEndAtSecond == option %} selected{% endif %}>{{ option }}</option>
+					{% endfor %}</select>
+				</div>
+				<input type="submit" value="Apply Filters">
+				<textarea id="IMEI" name="IMEI" hidden>{{IMEI}}</textarea>
+				<textarea id="mcuID" name="mcuID" hidden>{{mcuID}}</textarea>
+			</div>
+		</form>
+		<input type="checkbox" id="auto_fresh_check" name="auto_refresh" value="Auto Refresh"> Auto Refresh
+		<div class="tab">
+			<button class="tablinks" onclick="openTab(event, 'Main')" id="MainTab">Main</button>
+			<button class="tablinks" onclick="openTab(event, 'HCD')" id="HCDTab">Horizontal & Compass Graphs</button>
+			<button class="tablinks" onclick="openTab(event, 'Probes')" id="ProbesTab">Vertical Probe Graphs</button>
+			<button class="tablinks" onclick="openTab(event, 'Location')" id="LocationTab">Location Graphs</button>
+			<button class="tablinks" onclick="openTab(event, 'Temperature')" id="TemperatureTab">Temperature Graphs</button>
+			<button class="tablinks" onclick="openTab(event, 'Voltage_Current')" id="Voltage_currentTab">Voltage & Current Graphs</button>
+			<button class="tablinks" onclick="openTab(event, 'Advanced')" id="AdvancedTab">Advanced</button>
+			<button class="tablinks" onclick="openTab(event, 'Uplink')" id="UplinkTab">Uplink</button>
+			{% comment %} <button class="tablinks" onclick="openTab(event, 'MYOG')">Make your Own Graph</button> {% endcomment %}
+			{% comment %} <button class="tablinks" onclick="openTab(event, 'Raw')">Raw</button> {% endcomment %}
+			
+		</div>
+		<div id="Main" class="tabcontent">
+			<div class="grid_main">
+				<div class="col-1_main">
+					<h2>Payload Packet</h2>
+					<table>
+						<tr>
+						<th>Signal</th>
+						<th>Raw</th>
+						<th>Conv</th>
+						<th>Units</th>
+						</tr>
+						
+						<tr>
+						<td>Payload Yikes</td>
+						<td name='yikes_status'>{{ data.PacketV6.yikes_status }}</td>
+						<td name='yikes_status_units'>{{ data.PacketV6Units.yikes_status }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Payload MCU ID</td>
+						<td name='mcu_id'>{{ data.PacketV6.mcu_id }}</td>
+						<td name='mcu_id_units'>{{ data.PacketV6Units.mcu_id }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Version</td>
+						<td name='packet_version'>{{ data.PacketV6.version }}</td>
+						<td name='packet_version_units'>{{ data.PacketV6Units.version }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Sequence ID</td>
+						<td name='sequence_id'>{{ data.PacketV6.sequence_id }}</td>
+						<td name='sequence_id_units'>{{ data.PacketV6Units.sequence_id }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Time</td>
+						<td name='packet_time'>{{ data.PacketV6.time|date:"U" }} UTC</td>
+						<td name='packet_time_units'>{{ data.PacketV6Units.time }} UTC</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Latitude</td>
+						<td name='lat'>{{ data.PacketV6.latitude }}</td>
+						<td name='lat_units'>{{ data.PacketV6Units.latitude|floatformat:5 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Longitude</td>
+						<td name='long'>{{ data.PacketV6.longitude }}</td>
+						<td name='long_units'>{{ data.PacketV6Units.longitude|floatformat:5 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Altitude</td>
+						<td name='altitude'>{{ data.PacketV6.altitude }}</td>
+						<td name='altitude_units'>{{ data.PacketV6Units.altitude }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Ballast Status</td>
+						<td name='ball_status'>{{ data.PacketV6.ballast_status }}</td>
+						<td name='ball_status_units'>{{ data.PacketV6Units.ballast_status }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Cutdown Status</td>
+						<td name='cutd_status'>{{ data.PacketV6.cutdown_status }}</td>
+						<td name='cutd_status_units'>{{ data.PacketV6Units.cutdown_status }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Conductivity Time</td>
+						<td name='conductivity_time'>{{ data.PacketV6.conductivity_time|date:"U" }} UTC</td>
+						<td name='conductivity_time_units'>{{ data.PacketV6Units.conductivity_time }} UTC</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Satellite Count</td>
+						<td name='sat_count'>{{ data.PacketV6.satellites_count }}</td>
+						<td name='sat_count_units'>{{ data.PacketV6Units.satellites_count }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Commands Count</td>
+						<td name='command_count'>{{ data.PacketV6.commands_count }}</td>
+						<td name='command_count_units'>{{ data.PacketV6Units.commands_count }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Altimeter Temperature</td>
+						<td name='altimeter_temp'>{{ data.PacketV6.altimeter_temp }}</td>
+						<td name='altimeter_temp_units'>{{ data.PacketV6Units.altimeter_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Altimeter Pressure</td>
+						<td name='altimeter_pressure'>{{ data.PacketV6.altimeter_pressure }}</td>
+						<td name='altimeter_pressure_units'>{{ data.PacketV6Units.altimeter_pressure }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>+7V Battery Voltage</td>
+						<td name='positive_7v_batt_V'>{{ data.PacketV6.positive_7v_battery_voltage }}</td>
+						<td name='positive_7v_batt_V_units'>{{ data.PacketV6Units.positive_7v_battery_voltage|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>-7V Battery Voltage</td>
+						<td name='negative_7v_batt_V'>{{ data.PacketV6.negative_7v_battery_voltage }}</td>
+						<td name='negative_7v_batt_V_units'>{{ data.PacketV6Units.negative_7v_battery_voltage|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>+3.6V Battery Voltage</td>
+						<td name='3v6_batt_V'>{{ data.PacketV6.positive_3v6_battery_voltage }}</td>
+						<td name='3v6_batt_V_units'>{{ data.PacketV6Units.positive_3v6_battery_voltage|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>7V Rail Current Draw</td>
+						<td name='7v_current'>{{ data.PacketV6.current_draw_7v_rail }}</td>
+						<td name='7v_current_units'>{{ data.PacketV6Units.current_draw_7v_rail|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>3.3V Rail Current Draw</td>
+						<td name='3v3_current'>{{ data.PacketV6.current_draw_3v3_rail }}</td>
+						<td name='3v3_current_units'>{{ data.PacketV6Units.current_draw_3v3_rail|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Battery Temperature</td>
+						<td name='batt_temp'>{{ data.PacketV6.battery_temp }}</td>
+						<td name='batt_temp_units'>{{ data.PacketV6Units.battery_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>MCU Temperature</td>
+						<td name='mcu_temp'>{{ data.PacketV6.mcu_temp }}</td>
+						<td name='mcu_temp_units'>{{ data.PacketV6Units.mcu_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Compass Temperature</td>
+						<td name='compass_temp'>{{ data.PacketV6.compass_temp }}</td>
+						<td name='compass_temp_units'>{{ data.PacketV6Units.compass_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>ADC1 Temperature</td>
+						<td name='adc1_temp'>{{ data.PacketV6.adc1_temp }}</td>
+						<td name='adc1_temp_units'>{{ data.PacketV6Units.adc1_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>ADC2 Temperature</td>
+						<td name='adc2_temp'>{{ data.PacketV6.adc2_temp }}</td>
+						<td name='adc2_temp_units'>{{ data.PacketV6Units.adc2_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>External Temperature</td>
+						<td name='external_temp'>{{ data.PacketV6.external_temp }}</td>
+						<td name='external_temp_units'>{{ data.PacketV6Units.external_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>RockBlock Temperature</td>
+						<td name='RB_temp'>{{ data.PacketV6.rockblock_temp }}</td>
+						<td name='RB_temp_units'>{{ data.PacketV6Units.rockblock_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+					</table>
+				</div>
+				<div class="col-2_main">
+					<h3>Packet Info</h3>
+					<span> Last Sequence Number:  <span name='sequence_id'>{{data.PacketV6.sequence_id}}</span></span>
+					<span> Last Received Time: <span name='packet_time_units'>{{data.PacketV6Units.time}} UTC</span></span>
+					<h3>Location Info</h3>
+					<span> Latitude: <span name='lat_units'>{{data.PacketV6Units.latitude|floatformat:5}}</span></span>
+					<span> Longitude: <span name='long_units'>{{data.PacketV6Units.longitude|floatformat:5}}</span></span>
+					<span> Altitude: <span name='altitude_units'>{{data.PacketV6Units.altitude}}</span></span>
+					<span> Vertical Velocity: <span name='vert_vel'>{{last_vert_vel}}</span></span>
+					<h3>Probe & Compass Data</h3>
+					<span> H1 Probe: <span name='horiz1_units'>{{data.MeasurementsUnits.horiz1|floatformat:5}}</span></span>
+					<span> H2 Probe: <span name='horiz2_units'>{{data.MeasurementsUnits.horiz2|floatformat:5}}</span></span>
+					<span> H Probe Delta: <span name='horizD_units'>{{data.MeasurementsUnits.horizD|floatformat:5}}</span></span>
+					<span> V1 Probe: <span name='vert1_units'>{{data.MeasurementsUnits.vert1|floatformat:5}}</span></span>
+					<span> V2 Probe: <span name='vert2_units'>{{data.MeasurementsUnits.vert2|floatformat:5}}</span></span>
+					<span> VDelta Probe: <span name='vertD_units'>{{data.MeasurementsUnits.vertD|floatformat:5}}</span></span>
+					<span> V1 Probe Cond: <span name='V1_Probe_Cond_units'>{{data.ConductivityMeasurementsUnits.vert1}}</span></span>
+					<span> V2 Probe Cond: <span name='V2_Probe_Cond_units'>{{data.ConductivityMeasurementsUnits.vert2}}</span></span>
+					<span> CompassX: <span name='compass_X_units'>{{data.MeasurementsUnits.compassX}}</span></span>
+					<span> CompassY: <span name='compass_Y_units'>{{data.MeasurementsUnits.compassY}}</span></span>
+					<span> CompassZ: <span name='compass_Z_units'>{{data.MeasurementsUnits.compassZ}}</span></span>
+					<h3>Status Info</h3>
+					<span> Ballast: <span name='ball_status_units'>{{data.PacketV6Units.ballast_status}}</span></span>
+					<span> Cutdown: <span name='cutd_status_units'>{{data.PacketV6Units.cutdown_status}}</span></span>
+					<h4>Yikes Status</h4>
+					<span> Raw: <span name='yikes_status'>{{data.PacketV6.yikes_status}}</span> || Translation: <span name='yikes_status_units'>{{data.PacketV6Units.yikes_status}}</span></span>
+					<span><span class="dot" name='yikes_rest'></span> Reset </span>
+					<span><span class="dot" name='yikes_looprate'></span> Looprate </span>
+					<span><span class="dot" name='yikes_gps_tick'></span> gps_tick </span>
+					<span><span class="dot" name='yikes_rb_error'></span> RB_Error </span>
+					<span><span class="dot" name='yikes_rb_timeout'></span> RB_Timeout </span>
+					<span><span class="dot" name='yikes_gps_lock'></span> GPS_Lock </span>
+					<span><span class="dot" name='yikes_cond_pol'></span> Cond_Pol </span>
+				</div>
+				<div class="col-3_main">
+					<h2>Iridium Transmission</h2>
+					<span>Transmission Time: <span name='iridium_time'>{{ data.IridiumTransmission.time }} UTC</span></span>
+					<span>Iridium Latitude: <span name='iridium_lat'>{{ data.IridiumTransmission.latitude }}</span></span>
+					<span>Iridium Longitude: <span name='iridium_long'>{{ data.IridiumTransmission.longitude }}</span></span>
+					<span>Iridium CEP: <span name='iridium_cep'>{{ data.IridiumTransmission.cep }}</span></span>
+					<span>Iridium MOMSN: <span name='iridium_momsn'>{{ data.IridiumTransmission.momsn }}</span></span>
+					<span>Iridium IMEI: <span name='iridium_imei'>{{ data.IridiumTransmission.imei }}</span></span>
+					<span>Iridium Device Type: <span name='device_type'>{{ data.IridiumTransmission.device_type }}</span></span>
+					<span>Iridium Serial Number: <span name='serial'>{{ data.IridiumTransmission.serial }}</span></span>
+					<span>Iridium Session Status: <span name='session_status'>{{ data.IridiumTransmission.iridium_session_status }}</span></span>
+					<span>Transmitted Via Satellite: <span name='via_sat'>{{ data.IridiumTransmission.transmitted_via_satellite }}</span></span>
+				</div>
+			</div>
+
+			<script>
+				var masterBox = 0;
+				function String2Hex(tmp) {
+					var str = '';
+					for(var i = 0; i < tmp.length; i++) {
+						str += tmp[i].charCodeAt(0).toString(16);
+					}
+					return str;
+				}
+
+				String.prototype.hex16Encode = function(){
+					var hex, i;
+
+					var result = "";
+					for (i=0; i<this.length; i++) {
+						hex = this.charCodeAt(i).toString(16);
+						result += ("000"+hex).slice(-4);
+					}
+
+					return result
+				}
+				
+				String.prototype.hex16Decode = function(){
+					var j;
+					var hexes = this.match(/.{1,4}/g) || [];
+					var back = "";
+					for(j = 0; j<hexes.length; j++) {
+						back += String.fromCharCode(parseInt(hexes[j], 16));
+					}
+
+					return back;
+				}
+				String.prototype.hex8Encode = function(){
+					var hex, i;
+
+					var result = "";
+					for (i=0; i<this.length; i++) {
+						hex = this.charCodeAt(i).toString(16);
+						result += ("000"+hex).slice(-2);
+					}
+
+					return result
+				}
+				
+				String.prototype.hex8Decode = function(){
+					var j;
+					var hexes = this.match(/.{1,2}/g) || [];
+					var back = "";
+					for(j = 0; j<hexes.length; j++) {
+						back += String.fromCharCode(parseInt(hexes[j], 16));
+					}
+
+					return back;
+				}
+				
+				function updateBoxes()
+				{
+					if(masterBox == 1)
+					{
+						document.getElementById('hexid').value = utf8.encode(document.getElementById('utf8id').value).hex8Encode();
+						//document.getElementById('hexid').value = String2Hex(document.getElementById('utf8id').value);
+					}
+					if(masterBox === 2)
+					{
+						document.getElementById('utf8id').value = utf8.decode(document.getElementById('hexid').value.replace(/\s+/g, '').hex8Decode());
+						//var s = document.getElementById('hexid').value;
+						//document.getElementById('utf8id').value = decodeURIComponent(s.replace(/\s+/g, '').replace(/[0-9a-f]{2}/g, '%$&'));
+					}
+				}
+				
+				document.getElementById('hexid').addEventListener('keydown', function (event) {
+					//document.getElementById('utf8id')
+					masterBox = 2;
+				});
+				
+				document.getElementById('hexid').addEventListener('keypress', function (event) {
+					//document.getElementById('utf8id')
+					console.log(event);
+				});
+				
+				document.getElementById('utf8id').addEventListener('keydown', function (event) {
+					//document.getElementById('utf8id')
+					masterBox = 1;
+				});
+				
+				setInterval(function(){ updateBoxes(); }, 50);
+			</script>
+		</div>
+		<div id="HCD" class="tabcontent">
+			<div class="grid_graphs">
+				<div id="chart_H1"></div>
+				<div id="chart_H2"></div>
+				<div id="chart_HD"></div>
+				<div id="chart_CX"></div>
+				<div id="chart_CY"></div>
+				<div id="chart_CZ"></div>
+			</div>
+		</div>
+		<div id="Probes" class="tabcontent">
+			<div class="grid_graphs">
+				<div id="chart_V1C"></div>
+				<div id="chart_V2C"></div>
+				<div id="chart_V1"></div>
+				<div id="chart_V2"></div>
+				<div id="chart_VD"></div>
+			</div>
+		</div>
+		<div id="Location" class="tabcontent">
+			<div class="grid_graphs">
+				<div id="chart_lat"></div>
+				<div id="chart_long"></div>
+				<div id="chart_alt"></div>
+				<div id="chart_alt_press"></div>
+				<div id="chart_vertical_velocity"></div>
+				<div id="chart_sequenceID"></div>
+			</div>
+		</div>
+		<div id="Temperature" class="tabcontent">
+			<div class="grid_graphs">
+				<div id="chart_alt_temp"></div>
+				<div id="chart_batt_temp"></div>
+				<div id="chart_mcu_temp"></div>
+				<div id="chart_compass_temp"></div>
+				<div id="chart_adc1_temp"></div>
+				<div id="chart_adc2_temp"></div>
+				<div id="chart_ext_temp"></div>
+				<div id="chart_RB_temp"></div>
+			</div>
+		</div>
+		<div id="Voltage_Current" class="tabcontent">
+			<div class="grid_graphs">
+				<div id="chart_positive_7V_volts"></div>
+				<div id="chart_negative_7V_volts"></div>
+				<div id="chart_3V6_volts"></div>
+				<div id="chart_7V_current"></div>
+				<div id="chart_3V3_current"></div>
+			</div>
+		</div>
+		<div id="Uplink" class="tabcontent">
+			<h2>Uplink</h2>
+			<div class="uplink_center">
+				<form action='/submit/' method='POST' id='uplink_form'>
+					imei:
+					<br>
+					<!--<input type="text" name="imei" value="{{ imei }}">-->
+					<textarea id="imei" name="imei" disabled>{{ IMEI }}</textarea>
+					<br>
+					<br>
+					message<!-- (UTF8)-->:
+					<br>
+					<textarea id="utf8id" name="humanMessage"></textarea>
+					<br>
+					<br>
+					Password:
+					<br>
+					<textarea id="password" name="password"></textarea>
+					<br>
+					<br>
+					
+					<input type="submit" value="Send">
+				</form>
+				<div class="cutdown_status">cutdown status: <span name='cutd_status'>{{data.PacketV6.cutdown_status}}</span> <br>Translation: <span name='cutd_status_units'>{{data.PacketV6Units.cutdown_status}}</span></div>
+				<div class="ballast_status">ballast status: <span name='ball_status'>{{data.PacketV6.ballast_status}}</span> <br>Translation: <span name='ball_status_units'>{{data.PacketV6Units.ballast_status}}<span></div>
+				<div class="ballast_ordering">
+					Rear
+					<div class="ballast_indicators">
+						<div class="ballast_indicator_corner"><span>{%if mcuID == '4'%}3{% else %} 6 {% endif %}</span><span>7</span></div>
+    					<div class="ballast_indicator_corner"><span>{%if mcuID == '4'%}2{%else%}4{%endif%}</span><span>{%if mcuID == '4'%}6{%else%}5{%endif%}</span></div>
+    					<div class="ballast_indicator_corner"><span>0</span><span>{%if mcuID == '4'%}4{%else%}1{%endif%}</span></div>
+    					<div class="ballast_indicator_corner"><span>{%if mcuID == '4'%}1{%else%}2{%endif%}</span><span>{%if mcuID == '4'%}5{%else%}3{%endif%}</span></div>
+    				</div>
+					Front
+				</div>
+			</div>
+			<br>
+			<span>Command Count: <span name='command_count'>{{data.PacketV6.commands_count}}</span></span>
+			<br>
+			Command History:
+			<div class="Command_Hist", id="Command_Hist_Window">
+				{% for command in command_history %}
+					<span class="command{% if command.success %}_success{% else %}_fail{% endif %}">[{{command.time}}UTC]({{command.imei}}) {{command.message}} | SEND{% if command.success%} SUCCESS{% else %} FAILED{%endif%} |</span><br>
+				{% endfor %}
+			</div>
+			<a href="https://github.com/keleuk/GlobalCircuit/wiki/Uplink-Commands" target="_blank" rel="noopener noreferrer"><button>Uplink Command Instructions</button></a>
+		</div>
+		<div id="Advanced" class="tabcontent">
+			<div class="grid_advanced">
+				<div class="col-1_advanced">
+					<h2>Payload Packet</h2>
+					<table>
+						<tr>
+						<th>Signal</th>
+						<th>Raw</th>
+						<th>Conv</th>
+						<th>Units</th>
+						</tr>
+						
+						<tr>
+						<td>Payload Yikes</td>
+						<td name='yikes_status'>{{ data.PacketV6.yikes_status }}</td>
+						<td name='yikes_status_units'>{{ data.PacketV6Units.yikes_status }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Payload MCU ID</td>
+						<td name='mcu_id'>{{ data.PacketV6.mcu_id }}</td>
+						<td name='mcu_id_units'>{{ data.PacketV6Units.mcu_id }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Version</td>
+						<td name='packet_version'>{{ data.PacketV6.version }}</td>
+						<td name='packet_version_units'>{{ data.PacketV6Units.version }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Sequence ID</td>
+						<td name='sequence_id'>{{ data.PacketV6.sequence_id }}</td>
+						<td name='sequence_id_units'>{{ data.PacketV6Units.sequence_id }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Time</td>
+						<td name='packet_time'>{{ data.PacketV6.time|date:"U" }} UTC</td>
+						<td name='packet_time_units'>{{ data.PacketV6Units.time }} UTC</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Latitude</td>
+						<td name='lat'>{{ data.PacketV6.latitude }}</td>
+						<td name='lat_units'>{{ data.PacketV6Units.latitude|floatformat:5 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Longitude</td>
+						<td name='long'>{{ data.PacketV6.longitude }}</td>
+						<td name='long_units'>{{ data.PacketV6Units.longitude|floatformat:5 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Altitude</td>
+						<td name='altitude'>{{ data.PacketV6.altitude }}</td>
+						<td name='altitude_units'>{{ data.PacketV6Units.altitude }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Ballast Status</td>
+						<td name='ball_status'>{{ data.PacketV6.ballast_status }}</td>
+						<td name='ball_status_units'>{{ data.PacketV6Units.ballast_status }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Cutdown Status</td>
+						<td name='cutd_status'>{{ data.PacketV6.cutdown_status }}</td>
+						<td name='cutd_status_units'>{{ data.PacketV6Units.cutdown_status }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Conductivity Time</td>
+						<td name='conductivity_time'>{{ data.PacketV6.conductivity_time|date:"U" }} UTC</td>
+						<td name='conductivity_time_units'>{{ data.PacketV6Units.conductivity_time }} UTC</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>GPS Satellite Count</td>
+						<td name='sat_count'>{{ data.PacketV6.satellites_count }}</td>
+						<td name='sat_count_units'>{{ data.PacketV6Units.satellites_count }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Packet Commands Count</td>
+						<td name='command_count'>{{ data.PacketV6.commands_count }}</td>
+						<td name='command_count_units'>{{ data.PacketV6Units.commands_count }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Altimeter Temperature</td>
+						<td name='altimeter_temp'>{{ data.PacketV6.altimeter_temp }}</td>
+						<td name='altimeter_temp_units'>{{ data.PacketV6Units.altimeter_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Altimeter Pressure</td>
+						<td name='altimeter_pressure'>{{ data.PacketV6.altimeter_pressure }}</td>
+						<td name='altimeter_pressure_units'>{{ data.PacketV6Units.altimeter_pressure }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>+7V Battery Voltage</td>
+						<td name='positive_7v_batt_V'>{{ data.PacketV6.positive_7v_battery_voltage }}</td>
+						<td name='positive_7v_batt_V_units'>{{ data.PacketV6Units.positive_7v_battery_voltage|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>-7V Battery Voltage</td>
+						<td name='negative_7v_batt_V'>{{ data.PacketV6.negative_7v_battery_voltage }}</td>
+						<td name='negative_7v_batt_V_units'>{{ data.PacketV6Units.negative_7v_battery_voltage|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>+3.6V Battery Voltage</td>
+						<td name='3v6_batt_V'>{{ data.PacketV6.positive_3v6_battery_voltage }}</td>
+						<td name='3v6_batt_V_units'>{{ data.PacketV6Units.positive_3v6_battery_voltage|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>7V Rail Current Draw</td>
+						<td name='7v_current'>{{ data.PacketV6.current_draw_7v_rail }}</td>
+						<td name='7v_current_units'>{{ data.PacketV6Units.current_draw_7v_rail|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>3.3V Rail Current Draw</td>
+						<td name='3v3_current'>{{ data.PacketV6.current_draw_3v3_rail }}</td>
+						<td name='3v3_current_units'>{{ data.PacketV6Units.current_draw_3v3_rail|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Battery Temperature</td>
+						<td name='batt_temp'>{{ data.PacketV6.battery_temp }}</td>
+						<td name='batt_temp_units'>{{ data.PacketV6Units.battery_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>MCU Temperature</td>
+						<td name='mcu_temp'>{{ data.PacketV6.mcu_temp }}</td>
+						<td name='mcu_temp_units'>{{ data.PacketV6Units.mcu_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>Compass Temperature</td>
+						<td name='compass_temp'>{{ data.PacketV6.compass_temp }}</td>
+						<td name='compass_temp_units'>{{ data.PacketV6Units.compass_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>ADC1 Temperature</td>
+						<td name='adc1_temp'>{{ data.PacketV6.adc1_temp }}</td>
+						<td name='adc1_temp_units'>{{ data.PacketV6Units.adc1_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>ADC2 Temperature</td>
+						<td name='adc2_temp'>{{ data.PacketV6.adc2_temp }}</td>
+						<td name='adc2_temp_units'>{{ data.PacketV6Units.adc2_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>External Temperature</td>
+						<td name='external_temp'>{{ data.PacketV6.external_temp }}</td>
+						<td name='external_temp_units'>{{ data.PacketV6Units.external_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+						<tr>
+						<td>RockBlock Temperature</td>
+						<td name='RB_temp'>{{ data.PacketV6.rockblock_temp }}</td>
+						<td name='RB_temp_units'>{{ data.PacketV6Units.rockblock_temp|floatformat:2 }}</td>
+						<td></td>
+						</tr>
+					</table>
+				</div>
+				<div class="col-2_advanced">
+					<h2>Probe and Compass Measurements</h2>
+					<table>
+						<tr>
+						<th>Signal</th>
+						<th>Raw Min</th>
+						<th>Raw Avg</th>
+						<th>Raw Max</th>
+						<th>Conv Min</th>
+						<th>Conv Avg</th>
+						<th>Conv Max</th>
+						</tr>
+						
+						<tr>
+						<td>vert1</td>
+						<td name='vert1_agg_min'>{{ aggregate_data.Min.vert1__min|floatformat:2 }}</td>
+						<td name='vert1_agg_avg'>{{ aggregate_data.Avg.vert1__avg|floatformat:2 }}</td>
+						<td name='vert1_agg_max'>{{ aggregate_data.Max.vert1__max|floatformat:2 }}</td>
+						<td name='vert1_units_agg_min'>{{ aggregate_data.MinUnits.vert1__min|floatformat:2 }}</td>
+						<td name='vert1_units_agg_avg'>{{ aggregate_data.AvgUnits.vert1__avg|floatformat:2 }}</td>
+						<td name='vert1_units_agg_max'>{{ aggregate_data.MaxUnits.vert1__max|floatformat:2 }}</td>
+						</tr>
+						<tr>
+						<td>vert2</td>
+						<td name='vert2_agg_min'>{{ aggregate_data.Min.vert2__min|floatformat:2 }}</td>
+						<td name='vert2_agg_avg'>{{ aggregate_data.Avg.vert2__avg|floatformat:2 }}</td>
+						<td name='vert2_agg_max'>{{ aggregate_data.Max.vert2__max|floatformat:2 }}</td>
+						<td name='vert2_units_agg_min'>{{ aggregate_data.MinUnits.vert2__min|floatformat:2 }}</td>
+						<td name='vert2_units_agg_avg'>{{ aggregate_data.AvgUnits.vert2__avg|floatformat:2 }}</td>
+						<td name='vert2_units_agg_max'>{{ aggregate_data.MaxUnits.vert2__max|floatformat:2 }}</td>
+						</tr>
+						<tr>
+						<td>vertD</td>
+						<td name='vertd_agg_min'>{{ aggregate_data.Min.vertD__min|floatformat:2 }}</td>
+						<td name='vertd_agg_avg'>{{ aggregate_data.Avg.vertD__avg|floatformat:2 }}</td>
+						<td name='vertd_agg_max'>{{ aggregate_data.Max.vertD__max|floatformat:2 }}</td>
+						<td name='vertd_units_agg_min'>{{ aggregate_data.MinUnits.vertD__min|floatformat:2 }}</td>
+						<td name='vertd_units_agg_avg'>{{ aggregate_data.AvgUnits.vertD__avg|floatformat:2 }}</td>
+						<td name='vertd_units_agg_max'>{{ aggregate_data.MaxUnits.vertD__max|floatformat:2 }}</td>
+						</tr>
+						
+						<tr>
+						<td>horiz1</td>
+						<td name='horiz1_agg_min'>{{ aggregate_data.Min.horiz1__min|floatformat:2 }}</td>
+						<td name='horiz1_agg_avg'>{{ aggregate_data.Avg.horiz1__avg|floatformat:2 }}</td>
+						<td name='horiz1_agg_max'>{{ aggregate_data.Max.horiz1__max|floatformat:2 }}</td>
+						<td name='horiz1_units_agg_min'>{{ aggregate_data.MinUnits.horiz1__min|floatformat:2 }}</td>
+						<td name='horiz1_units_agg_avg'>{{ aggregate_data.AvgUnits.horiz1__avg|floatformat:2 }}</td>
+						<td name='horiz1_units_agg_max'>{{ aggregate_data.MaxUnits.horiz1__max|floatformat:2 }}</td>
+						</tr>
+						<tr>
+						<td>horiz2</td>
+						<td name='horiz1_agg_min'>{{ aggregate_data.Min.horiz2__min|floatformat:2 }}</td>
+						<td name='horiz1_agg_avg'>{{ aggregate_data.Avg.horiz2__avg|floatformat:2 }}</td>
+						<td name='horiz1_agg_max'>{{ aggregate_data.Max.horiz2__max|floatformat:2 }}</td>
+						<td name='horiz1_units_agg_min'>{{ aggregate_data.MinUnits.horiz2__min|floatformat:2 }}</td>
+						<td name='horiz1_units_agg_avg'>{{ aggregate_data.AvgUnits.horiz2__avg|floatformat:2 }}</td>
+						<td name='horiz1_units_agg_max'>{{ aggregate_data.MaxUnits.horiz2__max|floatformat:2 }}</td>
+						</tr>
+						<tr>
+						<td>horizD</td>
+						<td name='horizd_agg_min'>{{ aggregate_data.Min.horizD__min|floatformat:2 }}</td>
+						<td name='horizd_agg_avg'>{{ aggregate_data.Avg.horizD__avg|floatformat:2 }}</td>
+						<td name='horizd_agg_max'>{{ aggregate_data.Max.horizD__max|floatformat:2 }}</td>
+						<td name='horizd_units_agg_min'>{{ aggregate_data.MinUnits.horizD__min|floatformat:2 }}</td>
+						<td name='horizd_units_agg_avg'>{{ aggregate_data.AvgUnits.horizD__avg|floatformat:2 }}</td>
+						<td name='horizd_units_agg_max'>{{ aggregate_data.MaxUnits.horizD__max|floatformat:2 }}</td>
+						</tr>
+						
+						<tr>
+						<td>CompassX</td>
+						<td name='compassX_agg_min'>{{ aggregate_data.Min.compassX__min|floatformat:2 }}</td>
+						<td name='compassX_agg_avg'>{{ aggregate_data.Avg.compassX__avg|floatformat:2 }}</td>
+						<td name='compassX_agg_max'>{{ aggregate_data.Max.compassX__max|floatformat:2 }}</td>
+						<td name='compassX_units_agg_min'>{{ aggregate_data.MinUnits.compassX__min|floatformat:2 }}</td>
+						<td name='compassX_units_agg_avg'>{{ aggregate_data.AvgUnits.compassX__avg|floatformat:2 }}</td>
+						<td name='compassX_units_agg_max'>{{ aggregate_data.MaxUnits.compassX__max|floatformat:2 }}</td>
+						</tr>
+						<tr>
+						<td>CompassY</td>
+						<td name='compassY_agg_min'>{{ aggregate_data.Min.compassY__min|floatformat:2 }}</td>
+						<td name='compassY_agg_avg'>{{ aggregate_data.Avg.compassY__avg|floatformat:2 }}</td>
+						<td name='compassY_agg_max'>{{ aggregate_data.Max.compassY__max|floatformat:2 }}</td>
+						<td name='compassY_units_agg_min'>{{ aggregate_data.MinUnits.compassY__min|floatformat:2 }}</td>
+						<td name='compassY_units_agg_avg'>{{ aggregate_data.AvgUnits.compassY__avg|floatformat:2 }}</td>
+						<td name='compassY_units_agg_max'>{{ aggregate_data.MaxUnits.compassY__max|floatformat:2 }}</td>
+						</tr>
+						<tr>
+						<td>CompassZ</td>
+						<td name='compassZ_agg_min'>{{ aggregate_data.Min.compassZ__min|floatformat:2 }}</td>
+						<td name='compassZ_agg_avg'>{{ aggregate_data.Avg.compassZ__avg|floatformat:2 }}</td>
+						<td name='compassZ_agg_max'>{{ aggregate_data.Max.compassZ__max|floatformat:2 }}</td>
+						<td name='compassZ_Units_agg_min'>{{ aggregate_data.MinUnits.compassZ__min|floatformat:2 }}</td>
+						<td name='compassZ_Units_agg_avg'>{{ aggregate_data.AvgUnits.compassZ__avg|floatformat:2 }}</td>
+						<td name='compassZ_Units_agg_max'>{{ aggregate_data.MaxUnits.compassZ__max|floatformat:2 }}</td>
+						</tr>
+					</table>
+				</div>
+				<div class="col-2_advanced">
+					<h2>Iridium Transmission</h2>
+					<span>Transmission Time: <span name='iridium_time'>{{ data.IridiumTransmission.time }} UTC</span></span>
+					<span>Iridium Latitude: <span name='iridium_lat'>{{ data.IridiumTransmission.latitude }}</span></span>
+					<span>Iridium Longitude: <span name='iridium-long'>{{ data.IridiumTransmission.longitude }}</span></span>
+					<span>Iridium CEP: <span name='iridium_cep'>{{ data.IridiumTransmission.cep }}</span></span>
+					<span>Iridium MOMSN: <span name='iridium_momsn'>{{ data.IridiumTransmission.momsn }}</span></span>
+					<span>Iridium IMEI: <span name='iridium_imei'>{{ data.IridiumTransmission.imei }}</span></span>
+					<span>Iridium Device Type: <span name='device_type'>{{ data.IridiumTransmission.device_type }}</span></span>
+					<span>Iridium Serial Number: <span name='serial'>{{ data.IridiumTransmission.serial }}</span></span>
+					<span>Iridium Session Status: <span name='session_status'>{{ data.IridiumTransmission.iridium_session_status }}</span></span>
+					<span>Transmitted Via Satellite: <span name='via_sat'>{{ data.IridiumTransmission.transmitted_via_satellite }}</span></span>
+				</div>
+			</div>
+		</div>
+		<div id="MYOG" class="tabcontent">
+			{% comment %} <div>
+				<h1>{{ title }} </h1>
+				<th>{{ description }} </th>
+				<div id="chart_main"></div>
+			</div>
+			<form class="graphControls">
+				<div class="filters">
+					{% for name, value in FormFields.items %}
+					{{ value.label }}: 
+					<select name="{{ name }}">
+					{% for option in value.options %}<option value="{{ option }}"{% if value.selected == option %} selected{% endif %}>{{ option }}</option>
+					{% endfor %}          </select><br>
+					{% endfor %}
+				</div>
+				<input type="submit" value="Apply Filters">
+				
+			</form> {% endcomment %}
+		</div>
+		<div id="Raw" class="tabcontent">
+		</div>
+		<div class="Device_Identifier_Border" style="background-color: {{identifier_color}}">
+			<span class="Device_Identifier">
+				{% if IMEI != 'None' %} IMEI: {{IMEI}} {% endif %}
+				||
+				{% if mcuID != 'None' %} mcuID: {{mcuID}} {% endif %}
+			</span>
+		</div>
+		{% comment %} <button onclick="getNewPackets()">Refresh Test</button> {% endcomment %}
+	</body>
+</html>

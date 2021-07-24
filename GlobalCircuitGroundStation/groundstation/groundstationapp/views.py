@@ -2,6 +2,8 @@
 
 
 
+from django.conf.urls import handler400
+from django.http.response import HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 
 import MySQLdb
@@ -23,7 +25,6 @@ from . import structure
 from . import models
 from . import unitConversions as uC
 import super_secrets as secrets
-
 import datetime as dt
 from datetime import datetime
 from datetime import timedelta
@@ -162,17 +163,9 @@ def theBest(request):
   return render(request, 'groundstation/TheBest.json')
 
 def homepage(request):
-  #newIridiumData = models.IridiumData.objects.create(global_id=new_packet, transmit_time=datetime.utcnow(), iridium_latitude=0.1, iridium_longitude=1.0, iridium_cep=2.0, momsn=1, imei=999999999999999)
-  #newSlowMeasurement = models.SlowMeasurement.objects.create(global_id=new_packet, gps_latitude=0.11, gps_longitude=1.01, gps_altitude=999.999, gps_time=datetime.utcnow()-timedelta(hours=1))
-  
-  #emptyString = "dead"
-  #hexString = emptyString*(340//len(emptyString))
-  
-  #newRawData = models.RawData.objects.create(new_packet, data=?, hexData=hexString)
-  
-    
-  
-  context = {'serverType': secrets.serverType, 'currentTimeString': datetime.utcnow().strftime("%y-%m-%dT%H:%M:%S")}
+  imei_list = ['None', '300234065252710', '300434063219840', '300434063839690', '300434063766960', '300434063560100', '300434063184090', '300434063383330', '300434063185070', '300434063382350', '300234063778640', '888888888888888']
+  id_list = ['None', '1','2','3','4']
+  context = {'serverType': secrets.serverType, 'currentTimeString': datetime.utcnow().strftime("%y-%m-%dT%H:%M:%S"), 'imei_list': imei_list,'id_list':id_list}
   return render(request, 'groundstation/homepage.html', context)
 
 def gps(request):    # Change to google maps
@@ -192,7 +185,7 @@ def gps(request):    # Change to google maps
     
   db.close()
   data_source = SimpleDataSource(data=data)
-  chart = LineChart(data_source, options={'title': "Coordinates"}) # Creating a line chart
+  chart = LineChart(data_source, options={'title': "Coordinates", 'pointSize': 20}) # Creating a line chart
   
   context = {'chart': chart}
   return render(request, 'groundstation/gps.html', context) # rendering the chart when a request has gone through for this page, and using the mapPlot.html to render it
@@ -254,30 +247,66 @@ def scrapefunc(request):
 
 @csrf_exempt
 def submitfunc(request):
-  password = request.GET.get('password', '')
-  imei = request.GET.get('imei', '')
-  message = request.GET.get('message', '')
-  
-  if(imei == 'Flightboard2'):
-    imei = '300434063185070'
-  
-  context={
-  'serverType': secrets.serverType,
-  'imei': imei,
-  }
-  print("IMEI: " + imei)
-  print("MESSAGE: " + message)
-  postData = {
-  'imei': imei,
-  'data': message,
-  'username': secrets.rock7username,
-  'password': secrets.rock7password
-  }
-  if(imei != '' and password == secrets.commandPassword):
-    r = requests.post("https://core.rock7.com/rockblock/MT", data=postData)
-    print(r.status_code)
-    print(r.content)
-  return render(request, 'groundstation/submit.html', context)
+  if request.method == 'POST':
+    password = request.POST.get('password', '')
+    imei = request.POST.get('imei', '')
+    message = request.POST.get('message', '')
+    messageEncoded = binascii.hexlify(bytearray(message,'utf-8'))
+    if(imei == 'Flightboard2'):
+      imei = '300434063185070'
+    context={
+      'serverType': secrets.serverType,
+      'imei': imei,
+    }
+    print("IMEI: " + imei)
+    print("MESSAGE: " + message)
+    print("MESSAGE_ENCODED: " + str(messageEncoded))
+    headers = {"Accept": "text/plain"}
+    postData = {
+      'imei': imei,
+      'data': messageEncoded,
+      'username': secrets.rock7username,
+      'password': secrets.rock7password
+    }
+    
+    r = None
+    if(imei != '' and password == secrets.commandPassword):
+      r = requests.post("https://core.rock7.com/rockblock/MT", headers=headers, data=postData)
+      print(r.status_code)
+      print(r.content)
+      models.UplinkRequest.objects.create(imei = imei, time=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"), password=password,message=message, success=True)
+      return JsonResponse({'status': r.status_code, 'time': datetime.utcnow().strftime("%B %d, %Y %I:%M %p UTC"), 'imei': imei, 'message': message})
+    else:
+      models.UplinkRequest.objects.create(imei = imei, time=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"), password=password,message=message, success=False)
+      return JsonResponse({'status': 403, 'time': datetime.utcnow().strftime("%B %d, %Y %I:%M %p UTC"), 'imei': imei, 'message': message})
+    
+  else:
+    password = request.GET.get('password', '')
+    imei = request.GET.get('imei', '')
+    message = request.GET.get('message', '')
+    messageEncoded = bytearray(message, 'utf-8')
+    if(imei == 'Flightboard2'):
+      imei = '300434063185070'
+    
+    context={
+    'serverType': secrets.serverType,
+    'imei': imei,
+    }
+    print("IMEI: " + imei)
+    print("MESSAGE: " + message)
+    print("MESSAGE_ENCODED" + messageEncoded)
+    headers = {"Accept": "text/plain"}
+    postData = {
+    'imei': imei,
+    'data': message,
+    'username': secrets.rock7username,
+    'password': secrets.rock7password
+    }
+    if(imei != '' and password == secrets.commandPassword):
+      r = requests.post("https://core.rock7.com/rockblock/MT", headers=headers, data=postData)
+      print(r.status_code)
+      print(r.content)
+    return render(request, 'groundstation/submit.html', context)
 
 
 @csrf_exempt
@@ -396,7 +425,7 @@ def postfunc(requestedRequest):
     print(str(err))
   try:
     print('Proccessing the packet with the V6 parser.')
-    postfuncV6(request)
+    postfuncV6(requestedRequest)
   except Exception as err:
     print("Whoops, looks like the new parsing function malfunctioned.")
     print(str(err))    
@@ -443,6 +472,9 @@ def postfuncV6(requestedRequest):
     
     #Build raw packet object
     hexRawPacketData = requestedRequest["request.POST.get('data')"]
+    if(hexRawPacketData == None or hexRawPacketData == ''):
+      print("No Payload Data")
+      return
     binRawPacketData = binascii.unhexlify(hexRawPacketData)
     rawPacketObject = models.RawPacket.objects.create(parent_transmission = transmissonObject, data = binRawPacketData, hexdata = hexRawPacketData)
     print('Successfully created the raw packet object.')
@@ -612,7 +644,7 @@ def horizontal(request):
   chartDescription = "This is a test graph generated from all of the fast measurement data.\n This is mostly for demonstration.\n Please enjoy."
   
   data_source = SimpleDataSource(data=data)
-  chart = LineChart(data_source, options={'title': chartTitle}) # Creating a line chart
+  chart = LineChart(data_source, options={'title': chartTitle, 'pointSize': 20}) # Creating a line chart
   
   context = {'chart': chart, 'title': chartTitle, 'description': chartDescription}
 
@@ -649,7 +681,7 @@ def vertical(request):
   chartDescription = "This is a test graph generated from all of the fast measurement data.\n This is mostly for demonstration.\n Please enjoy."
   
   data_source = SimpleDataSource(data=data)
-  chart = LineChart(data_source, options={'title': chartTitle}) # Creating a line chart
+  chart = LineChart(data_source, options={'title': chartTitle, 'pointSize': 20}) # Creating a line chart
   
   context = {'chart': chart, 'title': chartTitle, 'description': chartDescription}
   return render(request, 'groundstation/graph.html', context)
@@ -667,7 +699,7 @@ def conductivity(request):
   chartDescription = "This is a test graph generated from all of the conductivity measurement data.\n This is mostly for demonstration.\n Please enjoy."
   
   data_source = SimpleDataSource(data=data)
-  chart = LineChart(data_source, options={'title': chartTitle}) # Creating a line chart
+  chart = LineChart(data_source, options={'title': chartTitle, 'pointSize': 20}) # Creating a line chart
   
   context = {'chart': chart, 'title': chartTitle, 'description': chartDescription}
   return render(request, 'groundstation/graph.html',context)

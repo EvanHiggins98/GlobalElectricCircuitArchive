@@ -261,3 +261,10 @@ class ConductivityMeasurementsUnits(models.Model):
   vert1 = models.FloatField()
   vert2 = models.FloatField()
   
+class UplinkRequest(models.Model):
+  id = models.AutoField(primary_key=True)
+  imei = models.BigIntegerField()
+  time = models.DateTimeField()
+  password = models.TextField(null=True)
+  message = models.TextField(null=True)
+  success = models.BooleanField(default=True)

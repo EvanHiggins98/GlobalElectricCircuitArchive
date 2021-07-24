@@ -19,7 +19,10 @@ from django.contrib import admin
 from groundstationapp.views import homepage, gps, fastPost, horizontal, vertical, conductivity, submitfunc, dumpfunc, scrapefunc, utf8js, theBest, greyBalloon, redBalloon, greyBalloonClicked, redBalloonClicked, dashboard, dashboardV6, kmlFile
 from groundstationapp.newGraph import newGraph, oldGoogleMap, googleMap, badGoogleMap, quickDescentRate, descentRate, avgBalloonLocation, csvFiles
 from groundstationapp.newGraph import Request, IridiumTransmission, RawPacket, PacketV6, PacketV6Units, Measurements, MeasurementsUnits, ConductivityMeasurements, ConductivityMeasurementsUnits
-from groundstationapp.graphV6 import graphV6
+from groundstationapp.graphV6 import graphV6, getNewPackets
+from groundstationapp.FileDownloads import fileDownloadView, downloadFile
+
+from groundstationapp.v2_graphV6  import v2_graphV6
 
 urlpatterns = [
   url(r'^$', homepage, name='homepage'),
@@ -29,8 +32,8 @@ urlpatterns = [
   url(r'^vertical/$', vertical, name='vertical'),
   #url(r'^compass/$', compass, name='compass'),
   url(r'^conductivity/$', conductivity, name='conductivity'),
-  url(r'^oldgraph/$', newGraph, name='oldGraph'),
-  url(r'^newgraph/$', newGraph, name='oldGraph'),
+  url(r'^oldgraph/$', graphV6, name='oldGraph'),
+  url(r'^newgraph/$', graphV6, name='oldGraph'),
   url(r'^post/$', fastPost, name='fastPost'),
   url(r'^submit/$', submitfunc, name='submitfunc'),
   url(r'^submit/utf8\.js$', utf8js, name='utf8js'),
@@ -46,13 +49,14 @@ urlpatterns = [
   url(r'^GreyBalloonClicked.png$', greyBalloonClicked, name='greyBalloonClicked'),
   url(r'^RedBalloonClicked.png$', redBalloonClicked, name='redBalloonClicked'),
   url(r'^dashboard/$', dashboard, name='dashboard'),
-  url(r'^dashboardV6/$', dashboardV6, name='dashboardV6'),
-  url(r'^graphV6/$', graphV6, name='graphV6'),
+  url(r'^dashboardV6/$', graphV6, name='oldGraph'),
+  url(r'^graphV6/$', graphV6, name='oldGraph'),
   url(r'^descentRate/$', descentRate, name='descentRate'),
   url(r'^quickDescentRate/$', quickDescentRate, name='quickDescentRate'),
   url(r'^balloonPath\.kml', kmlFile, name='kmlFile'),
   url(r'^avgBalloonLocation/$', avgBalloonLocation, name='avgBalloonLocation'),
-  url(r'^csvFiles/$', csvFiles, name='csvFiles'),
+  url(r'^csvFiles/$', fileDownloadView, name='csvFiles'),
+  url(r'^downloadFile/$', downloadFile, name='fileDownload'),
   url(r'^Request\.csv$', Request, name='Request'),
   url(r'^IridiumTransmission\.csv$', IridiumTransmission, name='IridiumTransmission'),
   url(r'^RawPacket\.csv$', RawPacket, name='RawPacket'),
@@ -62,4 +66,8 @@ urlpatterns = [
   url(r'^MeasurementsUnits\.csv$', MeasurementsUnits, name='MeasurementsUnits'),
   url(r'^ConductivityMeasurements\.csv$', ConductivityMeasurements, name='ConductivityMeasurements'),
   url(r'^ConductivityMeasurementsUnits\.csv$', ConductivityMeasurementsUnits, name='ConductivityMeasurementsUnits'),
+  url(r'^getUpdate/$', getNewPackets, name='getNewPackets'),
+  #url(r'^gps/$', gps, name='gps'),
+  #url(r'^altitude/$', altitude, name='altitude'),
+  url(r'^v2/dashboardV6/$', v2_graphV6, name='oldGraph'),
 ]

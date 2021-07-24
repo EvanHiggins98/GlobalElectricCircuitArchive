@@ -25,9 +25,15 @@ SECRET_KEY = secrets.secretkey
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+SECURE_HSTS_SECONDS = 0
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_SSL_REDIRECT = False
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172.17.0.1', '172.17.0.2', 'gec.codyanderson.net']
-
+ALLOWED_HOSTS = ['174.127.244.109','192.168.0.105', '127.0.0.1', 'localhost', '172.17.0.1', '172.17.0.2', 'gec.codyanderson.net', 'gec.evanhiggins.net', 'player1.tplinkdns.com']
 
 # Application definition
 
@@ -42,6 +48,7 @@ INSTALLED_APPS = [
     'groundstationapp',
     'graphos',
     'corsheaders',
+    'mod_wsgi.server'
 ]
 
 MIDDLEWARE = [
@@ -125,7 +132,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = False
+USE_L10N = True
 
 USE_TZ = True
 
@@ -134,3 +141,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/var/www/gecgroundstation.com/static/'

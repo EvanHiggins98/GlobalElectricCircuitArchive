@@ -616,7 +616,7 @@ def newGraph(request):
   
   chartTitle = "Title Here"
   chartDescription = "Description Here"
-  chartOptions = {'title': chartTitle}
+  chartOptions = {'title': chartTitle, 'pointSize': 5}
   
 
   if(signal in signalFunctions):
@@ -630,6 +630,12 @@ def newGraph(request):
     chart = LineChart(data_source, options=chartOptions) # Creating a line chart
   
   chartOptions['title'] = chartTitle
+  chartOptions['pointSize'] = 5
+  chartOptions['explorer'] = {
+    'actions': ['dragToPan','scrollToZoom', 'rightClickToReset'],
+    'axis': 'horizontal',
+    'keepInBounds': True,
+  }
   signalString = request.GET.get('signal','')
   
   horizontal =   True if signalString == 'horizontal' else False
@@ -872,8 +878,27 @@ def googleMap(request):
   
   points = [] #FORMAT OF '[Lat(float), Long(float), Name(String)],'
   
-  windowStartTimeString = '2019-08-29 00:00:00'
+  filterOptions = {}
+  
+  filterOptions['windowStartRelative'] = request.GET.get('windowStartRelative', 'false')
+  
+  filterOptions['windowStartAtDate'] = request.GET.get('windowStartAtDate', datetime.today().strftime("%Y-%m-%d"))
+  if filterOptions['windowStartAtDate'] == '':
+    filterOptions['windowStartAtDate'] = datetime.today().strftime("%Y-%m-%d")
+  filterOptions['windowStartAtHour'] = request.GET.get('windowStartAtHour', '00')
+  filterOptions['windowStartAtMinute'] = request.GET.get('windowStartAtMinute', '00')
+  filterOptions['windowStartAtSecond'] = request.GET.get('windowStartAtSecond', '00')
+  
+  windowStartTimeString = filterOptions['windowStartAtDate'] + ' '
+  windowStartTimeString = windowStartTimeString + filterOptions['windowStartAtHour'] + ':'
+  windowStartTimeString = windowStartTimeString + filterOptions['windowStartAtMinute'] + ':'
+  windowStartTimeString = windowStartTimeString + filterOptions['windowStartAtSecond']
+  
   windowStartTime = datetime.strptime(windowStartTimeString, "%Y-%m-%d %H:%M:%S")
+  
+  
+
+  
 
   ordered_gpsmeasurements = models.PacketV6Units.objects.order_by('-time').filter(time__gte=windowStartTime)
   if(formFields['mcuID']['selected'] != 'ANY'):
@@ -881,11 +906,11 @@ def googleMap(request):
   if(formFields['IMEI']['selected'] != 'ANY'):
     ordered_gpsmeasurements = ordered_gpsmeasurements.filter(parent_packet_v6__parent_transmission__imei=int(formFields['IMEI']['selected']))
   
-  ordered_gpsmeasurements = ordered_gpsmeasurements[:400]
+  ordered_gpsmeasurements = ordered_gpsmeasurements[:300]
   
   for x in ordered_gpsmeasurements:
     tempDateTime = x.time
-    tempDateString = tempDateTime.strftime("%Y-%m-%d %H:%M:%S UTC")
+    tempDateString = tempDateTime.strftime("%Y-%m-%d %H:%M:%S UTC") + " | mcuID: "+str(x.parent_packet_v6.mcu_id)
     
     realLong = x.longitude
     realLat = x.latitude
@@ -900,6 +925,10 @@ def googleMap(request):
     'points': points,
     'MAPS_API_KEY': secrets.MAPS_API_KEY,
     'FormFields': formFields,
+    'hours': [str(x).zfill(2) for x in range(24)],
+    'minutes': [str(x).zfill(2) for x in range(60)],
+    'seconds': [str(x).zfill(2) for x in range(60)],
+    'filterOptions': filterOptions
   }
   return render(request, 'groundstation/googleMap.html', context)
   
