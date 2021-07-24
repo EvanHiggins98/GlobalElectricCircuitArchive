@@ -10,6 +10,3 @@ Original repositories Global Electric Circuit project repositories can be found 
 | [GECutils](https://github.com/chordtoll/GECutils)                              | Python scripts      |
 | [LocalElectricCircuit](https://github.com/CodyAnderson/LocalElectricCircuit)| Circuit board files |
 
-{"mode":"full","isActive":false}
-
-
