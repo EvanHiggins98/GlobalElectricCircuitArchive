@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+	<head>
+		
+	</head>
+	<body>
+
+		<h1>Dashboard: </h1>
+		
+		<br>IridiumData transmit_time: {{ IridiumData.transmit_time }} <br>
+		IridiumData iridium_latitude: {{ IridiumData.iridium_latitude }} <br>
+		IridiumData iridium_longitude: {{ IridiumData.iridium_longitude }} <br>
+		IridiumData iridium_cep: {{ IridiumData.iridium_cep }} <br>
+		IridiumData momsn: {{ IridiumData.momsn }} <br>
+		IridiumData imei: {{ IridiumData.imei }} <br>
+		IridiumData transmitted_via_satellite: {{ IridiumData.transmitted_via_satellite }} <br>
+		
+		<br>Packet Version: {{ Packet.version }} <br>
+		Packet ID: {{ Packet.packet_id }} <br>
+		
+		<br>Status yikes: {{ Status.yikes }} <br>
+		Status ballast: {{ Status.ballast }} <br>
+		Status cutdown: {{ Status.cutdown }} <br>
+		
+		<br>SlowMeasurement gps_latitude: {{ SlowMeasurement.gps_latitude }} <br>
+		SlowMeasurement gps_longitude: {{ SlowMeasurement.gps_longitude }} <br>
+		SlowMeasurement gps_altitude: {{ SlowMeasurement.gps_altitude }} <br>
+		SlowMeasurement gps_time: {{ SlowMeasurement.gps_time }} <br>
+		SlowMeasurement cond_gps_time: {{ SlowMeasurement.cond_gps_time }} <br>
+		
+		<br>Supervision GPSSats: {{ SupData.GPSSats.value }} <br>
+		Supervision RBSig: {{ SupData.RBSig.value }} <br>
+		Supervision Commands: {{ SupData.Commands.value }} <br>
+		Supervision AltTemp: {{ SupData.AltTemp.value }} <br>
+		Supervision AltPress: {{ SupData.AltPress.value }} <br>
+		Supervision VbatPlus: {{ SupData.VbatPlus.value }} <br>
+		Supervision VbatMinus: {{ SupData.VbatMinus.value }} <br>
+		Supervision 3V6batV: {{ SupData.3V6batV.value }} <br>
+		Supervision 7V_I: {{ SupData.7V_I.value }} <br>
+		Supervision 3V3_I: {{ SupData.3V3_I.value }} <br>
+		Supervision Tbat: {{ SupData.Tbat.value }} <br>
+		Supervision Tcomp: {{ SupData.Tcomp.value }} <br>
+		Supervision Tmag: {{ SupData.Tmag.value }} <br>
+		Supervision Tadc1: {{ SupData.Tadc1.value }} <br>
+		Supervision Tadc2: {{ SupData.Tadc2.value }} <br>
+		Supervision Text: {{ SupData.Text.value }} <br>
+		Supervision Trock: {{ SupData.Trock.value }} <br>
+		
+	</body>
+
+</html>

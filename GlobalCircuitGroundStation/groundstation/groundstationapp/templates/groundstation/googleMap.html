@@ -1,0 +1,73 @@
+<html>
+   <head>
+      <title>Google Charts Tutorial</title>
+      <script type = "text/javascript" src = "https://www.gstatic.com/charts/loader.js">
+      </script>
+      <script type = "text/javascript" src = "https://www.google.com/jsapi">
+      </script>
+      <script type = "text/javascript">
+         google.charts.load('current', {'packages': ['map'], 'mapsApiKey': '{{ MAPS_API_KEY }}'});     
+      </script>
+   </head>
+   
+   <body>
+      <div id = "container" style = "width: 80%; height: 100%; float: left">
+      </div>
+      <div style = "width: 20%; height: 100%; float: left;">
+        <h1>•Map must be refreshed to show current points</h1>
+        <h2>•Clicking on a point will show its altitude</h2>
+        <h2>•The red(blue if selected) balloon is the most recent point</h2>
+        <h2>•The grey(dark grey if selected) balloon is an older point</h2>
+        <form>
+          {% for name, value in FormFields.items %}
+          {{ value.label }}: 
+          <select name="{{ name }}">
+            {% for option in value.options %}<option value="{{ option }}"{% if value.selected == option %} selected{% endif %}>{{ option }}</option>
+{% endfor %}          </select><br>
+          {% endfor %}<br>
+			    <input type="submit" value="Apply Filters">
+			    <input type="submit" value="Refresh Map">
+        </form>
+        <h2>Most recent:</h2>
+        <h3>Time: {{ points.0.2 }}</h3>
+        <h3>Lat,Lon: {{ points.0.0 }}, {{ points.0.1 }}</h3>
+        <h3>Alt: {{ points.0.3 }}</h3>
+      </div>
+      <script language = "JavaScript">
+          var chart = 0;
+          function drawChart() {
+            // Define the chart to be drawn.
+            var data = google.visualization.arrayToDataTable([
+               ['Lat', 'Long', 'Name', 'Marker'],
+               {% for point in points %}{% if points.0 == point or point.0 > 0.00000001 or point.0 < -0.00000001 %}{% if points.0 == point or point.1 > 0.00000001 or point.1 < -0.00000001 %}[{{ point.0 }}, {{ point.1 }}, '{{ point.2 }}<br>{{point.0}}, {{point.1}}<br>{{ point.3 }}', {% if points.0 == point %}'red'{% else %}'grey'{% endif %}],{% endif %}{% endif %}{% endfor %}
+            ]);
+            
+            var url = 'https://gec.calamityconductor.com/';
+              
+            // Set chart options
+            var options = {
+              showTooltip: true,
+              showInfoWindow: true,
+              useMapTypeControl: true,
+              zoomLevel: {% if points.0.0 < 0.00000001 and points.0.0 > -0.00000001 %}{% if points.0.1 < 0.00000001 and points.0.1 > -0.00000001 %}3{% else %}14{% endif %}{% else %}14{% endif %},
+              icons: {
+                red: {
+                  normal:   'https://i.imgur.com/KV4Eh0c.png',
+                  selected: 'https://i.imgur.com/0QI7Sao.png'
+                },
+                grey: {
+                  normal:   'https://i.imgur.com/4RrxAD6.png',
+                  selected: 'https://i.imgur.com/zKkyDgv.png'
+                }
+              }
+            };				
+
+            // Instantiate and draw the chart.
+            chart = new google.visualization.Map(document.getElementById
+            ('container'));
+            chart.draw(data, options);
+         }
+         google.charts.setOnLoadCallback(drawChart);
+      </script>
+   </body>
+</html>

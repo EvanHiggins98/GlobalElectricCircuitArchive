@@ -1,0 +1,16 @@
+{% if binary == 'True' %}
+{% for packet in packetList %}{{ packet }}
+{% endfor %}
+{% else %}
+[
+  {% for packet in packetList %}{
+    "imei": "{{ packet.imei }}",
+    "momsn": "{{ packet.momsn }}",
+    "transmit_time": "{{ packet.transmit_time }}",
+    "iridium_latitude": "{{ packet.iridium_latitude }}",
+    "iridium_longitude": "{{ packet.iridium_longitude }}",
+    "iridium_cep": "{{ packet.iridium_cep }}",
+    "data": "{{ packet.data }}"
+  }{% if packet is not packetList|last %},{% endif %}{% endfor %}
+]
+{% endif %}

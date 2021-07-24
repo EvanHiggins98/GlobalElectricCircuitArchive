@@ -1,0 +1,329 @@
+V<!doctype html>
+<html>
+	<head>
+		
+	</head>
+	<body>
+
+		<h1>Dashboard: </h1>
+    <form>
+      {% for name, value in FormFields.items %}
+      {{ value.label }}: 
+      <select name="{{ name }}">
+        {% for option in value.options %}<option value="{{ option }}"{% if value.selected == option %} selected{% endif %}>{{ option }}</option>
+{% endfor %}        </select><br>
+      {% endfor %}
+      <input type="submit" value="Apply Filters">
+    </form>
+    
+		<h2>Web Request</h2>
+      Request Time: {{ Request.time }} <br>
+      Request Processing Duration: {{ Request.processing_duration }} <br>
+      
+      Forwarded For Address: {{ Request.forwarded_for_address }} <br>
+      Forwarded Host Address: {{ Request.forwarded_host_address }} <br>
+      Forwarded Server Address: {{ Request.forwarded_server_address }} <br>
+      Remote Address: {{ Request.remote_address }} <br>
+      
+      Raw Request Data: {{ Request.raw_request_data }} <br>
+      
+      Response Duration: {{ Request.response_duration }} <br>
+      Response Errors: {{ Request.response_errors }} <br>
+      Response Status Code: {{ Request.response_status_code }} <br>
+    
+    
+    <h2>Iridium Transmission</h2>
+      Transmission Time: {{ Transmission.time }} <br>
+      
+      Iridium Latitude: {{ Transmission.latitude }} <br>
+      Iridium Longitude: {{ Transmission.longitude }} <br>
+      
+      Iridium CEP: {{ Transmission.cep }} <br>
+      Iridium MOMSN: {{ Transmission.momsn }} <br>
+      Iridium IMEI: {{ Transmission.imei }} <br>
+      
+      Iridium Device Type: {{ Transmission.device_type }} <br>
+      Iridium Serial Number: {{ Transmission.serial }} <br>
+      Iridium Session Status: {{ Transmission.iridium_session_status }} <br>
+      
+      Transmitted Via Satellite: {{ Transmission.transmitted_via_satellite }} <br>
+    
+    
+    <h2>Payload Packet</h2>
+      <table>
+        <tr>
+          <th>Signal</th>
+          <th>Raw</th>
+          <th>Conv</th>
+          <th>Units</th>
+        </tr>
+        
+        <tr>
+          <td>Payload Yikes</td>
+          <td>{{ Packet.yikes_status }}</td>
+          <td>{{ PacketUnits.yikes_status }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Payload MCU ID</td>
+          <td>{{ Packet.mcu_id }}</td>
+          <td>{{ PacketUnits.mcu_id }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Packet Version</td>
+          <td>{{ Packet.version }}</td>
+          <td>{{ PacketUnits.version }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Packet Sequence ID</td>
+          <td>{{ Packet.sequence_id }}</td>
+          <td>{{ PacketUnits.sequence_id }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Packet Time</td>
+          <td>{{ Packet.time|date:"U" }}</td>
+          <td>{{ PacketUnits.time }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>GPS Latitude</td>
+          <td>{{ Packet.latitude }}</td>
+          <td>{{ PacketUnits.latitude }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>GPS Longitude</td>
+          <td>{{ Packet.longitude }}</td>
+          <td>{{ PacketUnits.longitude }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>GPS Altitude</td>
+          <td>{{ Packet.altitude }}</td>
+          <td>{{ PacketUnits.altitude }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Ballast Status</td>
+          <td>{{ Packet.ballast_status }}</td>
+          <td>{{ PacketUnits.ballast_status }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Cutdown Status</td>
+          <td>{{ Packet.cutdown_status }}</td>
+          <td>{{ PacketUnits.cutdown_status }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Conductivity Time</td>
+          <td>{{ Packet.conductivity_time|date:"U" }}</td>
+          <td>{{ PacketUnits.conductivity_time }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>GPS Satellite Count</td>
+          <td>{{ Packet.satellites_count }}</td>
+          <td>{{ PacketUnits.satellites_count }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>RockBlock Signal Strength</td>
+          <td>{{ Packet.rockblock_signal_strength }}</td>
+          <td>{{ PacketUnits.rockblock_signal_strength }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Packet Commands Count</td>
+          <td>{{ Packet.commands_count }}</td>
+          <td>{{ PacketUnits.commands_count }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Altimeter Temperature</td>
+          <td>{{ Packet.altimeter_temp }}</td>
+          <td>{{ PacketUnits.altimeter_temp }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Altimeter Pressure</td>
+          <td>{{ Packet.altimeter_pressure }}</td>
+          <td>{{ PacketUnits.altimeter_pressure }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>+7V Battery Voltage</td>
+          <td>{{ Packet.positive_7v_battery_voltage }}</td>
+          <td>{{ PacketUnits.positive_7v_battery_voltage }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>-7V Battery Voltage</td>
+          <td>{{ Packet.negative_7v_battery_voltage }}</td>
+          <td>{{ PacketUnits.negative_7v_battery_voltage }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>+3.6V Battery Voltage</td>
+          <td>{{ Packet.positive_3v6_battery_voltage }}</td>
+          <td>{{ PacketUnits.positive_3v6_battery_voltage }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>7V Rail Current Draw</td>
+          <td>{{ Packet.current_draw_7v_rail }}</td>
+          <td>{{ PacketUnits.current_draw_7v_rail }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>3.3V Rail Current Draw</td>
+          <td>{{ Packet.current_draw_3v3_rail }}</td>
+          <td>{{ PacketUnits.current_draw_3v3_rail }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Battery Temperature</td>
+          <td>{{ Packet.battery_temp }}</td>
+          <td>{{ PacketUnits.battery_temp }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>MCU Temperature</td>
+          <td>{{ Packet.mcu_temp }}</td>
+          <td>{{ PacketUnits.mcu_temp }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Compass Temperature</td>
+          <td>{{ Packet.compass_temp }}</td>
+          <td>{{ PacketUnits.compass_temp }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>ADC1 Temperature</td>
+          <td>{{ Packet.adc1_temp }}</td>
+          <td>{{ PacketUnits.adc1_temp }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>ADC2 Temperature</td>
+          <td>{{ Packet.adc2_temp }}</td>
+          <td>{{ PacketUnits.adc2_temp }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>External Temperature</td>
+          <td>{{ Packet.external_temp }}</td>
+          <td>{{ PacketUnits.external_temp }}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>RockBlock Temperature</td>
+          <td>{{ Packet.rockblock_temp }}</td>
+          <td>{{ PacketUnits.rockblock_temp }}</td>
+          <td></td>
+        </tr>
+      </table>
+  
+  
+    <h2>Probe and Compass Measurements</h2>
+      <table>
+        <tr>
+          <th>Signal</th>
+          <th>Raw Min</th>
+          <th>Raw Avg</th>
+          <th>Raw Max</th>
+          <th>Conv Min</th>
+          <th>Conv Avg</th>
+          <th>Conv Max</th>
+        </tr>
+        
+        <tr>
+          <td>vert1</td>
+          <td>{{ Measurements.Min.vert1__min }}</td>
+          <td>{{ Measurements.Avg.vert1__avg }}</td>
+          <td>{{ Measurements.Max.vert1__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__vert1__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__vert1__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__vert1__max }}</td>
+        </tr>
+        <tr>
+          <td>vert2</td>
+          <td>{{ Measurements.Min.vert2__min }}</td>
+          <td>{{ Measurements.Avg.vert2__avg }}</td>
+          <td>{{ Measurements.Max.vert2__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__vert2__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__vert2__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__vert2__max }}</td>
+        </tr>
+        <tr>
+          <td>vertD</td>
+          <td>{{ Measurements.Min.vertD__min }}</td>
+          <td>{{ Measurements.Avg.vertD__avg }}</td>
+          <td>{{ Measurements.Max.vertD__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__vertD__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__vertD__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__vertD__max }}</td>
+        </tr>
+        
+        <tr>
+          <td>horiz1</td>
+          <td>{{ Measurements.Min.horiz1__min }}</td>
+          <td>{{ Measurements.Avg.horiz1__avg }}</td>
+          <td>{{ Measurements.Max.horiz1__max }}</td>
+        </tr>
+        <tr>
+          <td>horiz2</td>
+          <td>{{ Measurements.Min.horiz2__min }}</td>
+          <td>{{ Measurements.Avg.horiz2__avg }}</td>
+          <td>{{ Measurements.Max.horiz2__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__horiz2__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__horiz2__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__horiz2__max }}</td>
+        </tr>
+        <tr>
+          <td>horizD</td>
+          <td>{{ Measurements.Min.horizD__min }}</td>
+          <td>{{ Measurements.Avg.horizD__avg }}</td>
+          <td>{{ Measurements.Max.horizD__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__horizD__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__horizD__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__horizD__max }}</td>
+        </tr>
+        
+        <tr>
+          <td>CompassX</td>
+          <td>{{ Measurements.Min.compassX__min }}</td>
+          <td>{{ Measurements.Avg.compassX__avg }}</td>
+          <td>{{ Measurements.Max.compassX__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__compassX__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__compassX__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__compassX__max }}</td>
+        </tr>
+        <tr>
+          <td>CompassY</td>
+          <td>{{ Measurements.Min.compassY__min }}</td>
+          <td>{{ Measurements.Avg.compassY__avg }}</td>
+          <td>{{ Measurements.Max.compassY__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__compassY__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__compassY__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__compassY__max }}</td>
+        </tr>
+        <tr>
+          <td>CompassZ</td>
+          <td>{{ Measurements.Min.compassZ__min }}</td>
+          <td>{{ Measurements.Avg.compassZ__avg }}</td>
+          <td>{{ Measurements.Max.compassZ__max }}</td>
+          <td>{{ MeasurementsUnits.Min.child_measurements_units__compassZ__min }}</td>
+          <td>{{ MeasurementsUnits.Avg.child_measurements_units__compassZ__avg }}</td>
+          <td>{{ MeasurementsUnits.Max.child_measurements_units__compassZ__max }}</td>
+        </tr>
+      </table>
+      
+		
+	</body>
+
+</html>
