@@ -16,29 +16,58 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
-from groundstationapp.views import homepage, gps, postfunc, horizontal, vertical, conductivity, submitfunc, dumpfunc, scrapefunc, utf8js, theBest, greyBalloon, redBalloon, greyBalloonClicked, redBalloonClicked
-from groundstationapp.newGraph import newGraph, googleMap, badGoogleMap
+from groundstationapp.views import homepage, gps, fastPost, horizontal, vertical, conductivity, submitfunc, dumpfunc, scrapefunc, utf8js, theBest, greyBalloon, redBalloon, greyBalloonClicked, redBalloonClicked, dashboard, dashboardV6, kmlFile
+from groundstationapp.newGraph import newGraph, oldGoogleMap, googleMap, badGoogleMap, quickDescentRate, descentRate, avgBalloonLocation, csvFiles
+from groundstationapp.newGraph import Request, IridiumTransmission, RawPacket, PacketV6, PacketV6Units, Measurements, MeasurementsUnits, ConductivityMeasurements, ConductivityMeasurementsUnits
+from groundstationapp.graphV6 import graphV6, getNewPackets
+from groundstationapp.FileDownloads import fileDownloadView, downloadFile
+
+from groundstationapp.v2_graphV6  import v2_graphV6
 
 urlpatterns = [
-    url(r'^$', homepage, name='homepage'),
-    #url(r'^gps/$', gps, name='gps'),
-	#url(r'^altitude/$', altitude, name='altitude'),
-	url(r'^horizontal/$', horizontal, name='horizontal'),
-	url(r'^vertical/$', vertical, name='vertical'),
-	#url(r'^compass/$', compass, name='compass'),
-	url(r'^conductivity/$', conductivity, name='conductivity'),
-	url(r'^newgraph/$', newGraph, name='newGraph'),
-    url(r'^post/$', postfunc, name='postfunc'),
-	url(r'^submit/$', submitfunc, name='submitfunc'),
-	url(r'^submit/utf8\.js$', utf8js, name='utf8js'),
-	url(r'^dump.hex$', dumpfunc, name='dumpfunc'),
-	url(r'^dump.json$', dumpfunc, name='dumpfunc'),
-	url(r'^theBest.json$', theBest, name='theBest'),
-	url(r'^scrape/$', scrapefunc, name='scrapefunc'),
-	url(r'^googleMap/$', googleMap, name='googleMap'),
-	url(r'^badGoogleMap/$', badGoogleMap, name='badGoogleMap'),
-	url(r'^GreyBalloon.png$', greyBalloon, name='greyBalloon'),
-	url(r'^RedBalloon.png$', redBalloon, name='redBalloon'),
-	url(r'^GreyBalloonClicked.png$', greyBalloonClicked, name='greyBalloonClicked'),
-	url(r'^RedBalloonClicked.png$', redBalloonClicked, name='redBalloonClicked'),
+  url(r'^$', homepage, name='homepage'),
+  #url(r'^gps/$', gps, name='gps'),
+  #url(r'^altitude/$', altitude, name='altitude'),
+  url(r'^horizontal/$', horizontal, name='horizontal'),
+  url(r'^vertical/$', vertical, name='vertical'),
+  #url(r'^compass/$', compass, name='compass'),
+  url(r'^conductivity/$', conductivity, name='conductivity'),
+  url(r'^oldgraph/$', graphV6, name='oldGraph'),
+  url(r'^newgraph/$', graphV6, name='oldGraph'),
+  url(r'^post/$', fastPost, name='fastPost'),
+  url(r'^submit/$', submitfunc, name='submitfunc'),
+  url(r'^submit/utf8\.js$', utf8js, name='utf8js'),
+  url(r'^dump.hex$', dumpfunc, name='dumpfunc'),
+  url(r'^dump.json$', dumpfunc, name='dumpfunc'),
+  url(r'^theBest.json$', theBest, name='theBest'),
+  url(r'^scrape/$', scrapefunc, name='scrapefunc'),
+  url(r'^googleMap/$', googleMap, name='googleMap'),
+  url(r'^oldGoogleMap/$', oldGoogleMap, name='oldGoogleMap'),
+  url(r'^badGoogleMap/$', badGoogleMap, name='badGoogleMap'),
+  url(r'^GreyBalloon.png$', greyBalloon, name='greyBalloon'),
+  url(r'^RedBalloon.png$', redBalloon, name='redBalloon'),
+  url(r'^GreyBalloonClicked.png$', greyBalloonClicked, name='greyBalloonClicked'),
+  url(r'^RedBalloonClicked.png$', redBalloonClicked, name='redBalloonClicked'),
+  url(r'^dashboard/$', dashboard, name='dashboard'),
+  url(r'^dashboardV6/$', graphV6, name='oldGraph'),
+  url(r'^graphV6/$', graphV6, name='oldGraph'),
+  url(r'^descentRate/$', descentRate, name='descentRate'),
+  url(r'^quickDescentRate/$', quickDescentRate, name='quickDescentRate'),
+  url(r'^balloonPath\.kml', kmlFile, name='kmlFile'),
+  url(r'^avgBalloonLocation/$', avgBalloonLocation, name='avgBalloonLocation'),
+  url(r'^csvFiles/$', fileDownloadView, name='csvFiles'),
+  url(r'^downloadFile/$', downloadFile, name='fileDownload'),
+  url(r'^Request\.csv$', Request, name='Request'),
+  url(r'^IridiumTransmission\.csv$', IridiumTransmission, name='IridiumTransmission'),
+  url(r'^RawPacket\.csv$', RawPacket, name='RawPacket'),
+  url(r'^PacketV6\.csv$', PacketV6, name='PacketV6'),
+  url(r'^PacketV6Units\.csv$', PacketV6Units, name='PacketV6Units'),
+  url(r'^Measurements\.csv$', Measurements, name='Measurements'),
+  url(r'^MeasurementsUnits\.csv$', MeasurementsUnits, name='MeasurementsUnits'),
+  url(r'^ConductivityMeasurements\.csv$', ConductivityMeasurements, name='ConductivityMeasurements'),
+  url(r'^ConductivityMeasurementsUnits\.csv$', ConductivityMeasurementsUnits, name='ConductivityMeasurementsUnits'),
+  url(r'^getUpdate/$', getNewPackets, name='getNewPackets'),
+  #url(r'^gps/$', gps, name='gps'),
+  #url(r'^altitude/$', altitude, name='altitude'),
+  url(r'^v2/dashboardV6/$', v2_graphV6, name='oldGraph'),
 ]

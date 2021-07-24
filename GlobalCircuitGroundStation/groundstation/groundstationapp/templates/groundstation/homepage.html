@@ -1,6 +1,9 @@
 <!doctype html>
 <html>
     <head>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'groundstation/homepage.css' %}">
+		<script type="text/javascript" src="{% static 'groundstation/homepage.js' %}"></script>
 		<title>Global Circuit Ground Station: {{ serverType }} SERVER</title>
     </head>
     <body>
@@ -13,80 +16,41 @@
 		</div>
 		<div style="display: block;">
 			<div style="background-color:#dddddd; display: inline-block; padding: 0em 1em 0em 1em; float: left;">
-				<h2>Updated Features</h2>
-				<h3>(You probably should use these)</h3>
-				
-				<a href="/newgraph"><button>Graphs</button></a>
-				<br><br>
-				<a href="/submit"><button>Uplink</button></a>
-				<br><br>
-				<a href="/dump.json"><button>dump.json</button></a>
-				<br><br>
-				<a href="/googleMap"><button>GPS Google Map</button></a>
-				<br><br>
-			</div>
-		
-		
-			<div style="background-color:#aaaaaa; display: inline-block; padding: 0em 1em 1em 1em; float: left;">
-				<h2>Legacy Features</h2>
-				<h4 style="float: left;">(You probably should</h4>
-				<h3 style="color: #ff0000; float: left;">&nbsp;NOT&nbsp;</h3>
-				<h4 style="float: left;">use these)</h4>
-				<h3>Graphs: </h3>
-				<form action="/gps/">
-					<input type="submit" value="GPS Coordinates" />
-				</form>
-				
-				<h3> </h3>
-				
-				<form action="/altitude/">
-					<input type="submit" value="Altitude" />
-				</form>
-				
-				<h3> </h3>
-				
-				<form action="/horizontal/">
-					<input type="submit" value="Horizontal Probes" />
-				</form>
-				
-				<h4> </h4>
-				
-				<form action="/vertical/">
-					<input type="submit" value="Vertical Probes" />
-				</form>
-				
-				<h5> </h5>
-				
-				<form action="/compass/">
-					<input type="submit" value="Compass Data" />
-				</form>
-				
-				<h6> </h6>
-				
-				<form action="/conductivity/">
-					<input type="submit" value="Conductivity" />
-				</form>
-				
-				<h3> </h3>
-				
-				<h3>Tables: </h3>
-				<h3> </h3>
-				<form action="/tables/">
-					<input type="submit" value="Tables" />
-				</form>
-				
-				<h3> </h3>
-				<h3>Download Files: </h3>
-				<h3> </h3>
-				<form action="/pdf/">
-					<input type="submit" value="Download PDF" />
-				</form>
-			
-				<h3></h3>
-			
-				<form action="/csv/">
-					<input type="submit" value="Download CSV" />
-				</form>
+			<h2>Ground Station Features</h2>
+			<form action="/dashboardV6" method="get">
+				<div class = "dashboard_select">
+					<input type="submit" value="Dashboard" id="dashboard_button" disabled>
+					<br>
+					Packet MCU ID:
+					<select name="mcuID" id="id_selector" onchange="id_select()">
+						{% for option in id_list %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
+					</select>
+					<br>
+				</div>
+			</form>
+			<form action="/v2/dashboardV6" method="get">
+				<div class = "dashboard_select">
+					<input type="submit" value="Dashboard Iridium Backup" id="dashboard_v2_button" disabled>
+					<br>
+					Packet MCU ID:
+					<select name="mcuID" id="id_v2_selector" onchange="id_v2_select()">
+						{% for option in id_list %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
+					</select>
+					<br>
+				</div>
+			</form>
+			<br><br>
+			<a href="/googleMap"><button>GPS Map</button></a>
+			<br><br>
+			<h2>Info & Utilities</h2>
+        	<a href="https://github.com/keleuk/GlobalCircuit/wiki/Uplink-Commands"><button>Uplink Command Instructions</button></a>
+			<br><br>
+        	<a href="https://github.com/keleuk/GlobalCircuit/wiki/Packet"><button>Packet Structure</button></a>
+			<br><br>
+        	<a href="/balloonPath.kml" download><button>Google Earth Balloon Path .kml File</button></a>
+			<br><br>
+        	<a href="/csvFiles"><button>CSV Files</button></a>
+			<br><br>
 			</div>
 		</div>
     </body>
