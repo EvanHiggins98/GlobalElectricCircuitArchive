@@ -7,39 +7,7 @@
 		</script>
 	</head>
 	<body>
-		<form class="timeControls">
-			<div class='TimeWindowControls'>
-				Data Time Frame: <br>
-				<div style="margin-left: 40px;">
-					Start at: 
-					<input type="date" id="windowStartAtDate" name="windowStartAtDate" value="{{ filterOptions.windowStartAtDate }}">
-					<select id="windowStartAtHour" name="windowStartAtHour">
-					{% for option in hours %}<option value="{{ option }}"{% if filterOptions.windowStartAtHour == option %} selected{% endif %}>{{ option }}</option>
-					{% endfor %}</select>
-					:<select id="windowStartAtMinute" name="windowStartAtMinute">
-					{% for option in minutes %}<option value="{{ option }}"{% if filterOptions.windowStartAtMinute == option %} selected{% endif %}>{{ option }}</option>
-					{% endfor %}</select>
-					:<select id="windowStartAtSecond" name="windowStartAtSecond">
-					{% for option in seconds %}<option value="{{ option }}"{% if filterOptions.windowStartAtSecond == option %} selected{% endif %}>{{ option }}</option>
-					{% endfor %}</select>
-				</div>
-				<div style="margin-left: 40px;">
-					End at: 
-					<input type="date" id="windowEndAtDate" name="windowEndAtDate" value="{{ filterOptions.windowEndAtDate }}">
-					<select id="windowEndAtHour" name="windowEndAtHour">
-					{% for option in hours %}<option value="{{ option }}"{% if filterOptions.windowEndAtHour == option %} selected{% endif %}>{{ option }}</option>
-					{% endfor %}</select>
-					:<select id="windowEndAtMinute" name="windowEndAtMinute">
-					{% for option in minutes %}<option value="{{ option }}"{% if filterOptions.windowEndAtMinute == option %} selected{% endif %}>{{ option }}</option>
-					{% endfor %}</select>
-					:<select id="windowEndAtSecond" name="windowEndAtSecond">
-					{% for option in seconds %}<option value="{{ option }}"{% if filterOptions.windowEndAtSecond == option %} selected{% endif %}>{{ option }}</option>
-					{% endfor %}</select>
-				</div>
-				<input type="submit" value="Apply Filters">
-				<textarea id="mcuID" name="mcuID" hidden>{{mcuID}}</textarea>
-			</div>
-		</form>
+
 		<h1>Map plot: </h1>
 		<h2> </h2>
 		<th>Shows the current latitude and longitude of the payload. </th>

@@ -21,11 +21,15 @@
 			<form>
 				imei:
 				<br>
-				<!--<input type="text" name="imei" value="{{ imei }}">-->
-        		<textarea id="imei" name="imei" rows="1" cols="80">{{ imei }}</textarea>
+				<input type="text" name="imei" value="{{ imei }}">
 				<br>
 				<br>
-				message<!-- (UTF8)-->:
+				
+				message (HEX):
+				<br>
+				<textarea id="hexid" name="message" rows="3" cols="80"></textarea>
+				<br>
+				message (UTF8):
 				<br>
 				<textarea id="utf8id" name="humanMessage" rows="3" cols="80"></textarea>
 				<br>
