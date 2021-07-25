@@ -1,3 +1,5 @@
+# Unit conversions from raw data
+
 #gps_latitude, gps_longitude
 def lat_lon_conv(sig):
   realLong = sig

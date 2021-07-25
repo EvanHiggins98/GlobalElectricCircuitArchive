@@ -1,3 +1,4 @@
+//id selection
 function id_select(){
     document.getElementById('id_v2_selector').value = document.getElementById('id_selector').value
     if(document.getElementById('id_selector').value == 'None'){
@@ -9,7 +10,7 @@ function id_select(){
         document.getElementById('dashboard_v2_button').disabled = false
     }
 }
-
+//id selection for dashboard v2
 function id_v2_select(){
     document.getElementById('id_selector').value = document.getElementById('id_v2_selector').value
     if(document.getElementById('id_v2_selector').value == 'None'){

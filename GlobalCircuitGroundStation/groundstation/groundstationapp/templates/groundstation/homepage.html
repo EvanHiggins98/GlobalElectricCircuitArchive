@@ -1,26 +1,28 @@
 <!doctype html>
 <html>
     <head>
+		{% comment %} Load Static Data {% endcomment %}
 		{% load static %}
 		<link rel="stylesheet" type="text/css" href="{% static 'groundstation/homepage.css' %}">
 		<script type="text/javascript" src="{% static 'groundstation/homepage.js' %}"></script>
 		<title>Global Circuit Ground Station: {{ serverType }} SERVER</title>
     </head>
     <body>
-	
-	
-		
+		{% comment %} Navigatio Block {% endcomment %}
 		<div style="display: block; width: 100%;">
 			<h1 >Global Circuit Ground Station</h1>
 			<h1 style="color: {% if serverType == "DEVELOPMENT" %}#FF0000{% elif serverType == "PRODUCTION" %}#008000{% else %}#FF8000{% endif %};">&nbsp;{{ serverType }} SERVER</h1>
 		</div>
 		<div style="display: block;">
 			<div style="background-color:#dddddd; display: inline-block; padding: 0em 1em 0em 1em; float: left;">
+			{% comment %} Ground Station Functional Navigations {% endcomment %}
+			{% comment %} Used for live interaction with the launched devices {% endcomment %}
 			<h2>Ground Station Features</h2>
 			<form action="/dashboardV6" method="get">
 				<div class = "dashboard_select">
 					<input type="submit" value="Dashboard" id="dashboard_button" disabled>
 					<br>
+					{% comment %} mcuID selection {% endcomment %}
 					Packet MCU ID:
 					<select name="mcuID" id="id_selector" onchange="id_select()">
 						{% for option in id_list %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
@@ -32,6 +34,7 @@
 				<div class = "dashboard_select">
 					<input type="submit" value="Dashboard Iridium Backup" id="dashboard_v2_button" disabled>
 					<br>
+					{% comment %} mcuID selection {% endcomment %}
 					Packet MCU ID:
 					<select name="mcuID" id="id_v2_selector" onchange="id_v2_select()">
 						{% for option in id_list %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
@@ -40,8 +43,11 @@
 				</div>
 			</form>
 			<br><br>
+			{% comment %} GPS Map for tracking devices {% endcomment %}
 			<a href="/googleMap"><button>GPS Map</button></a>
 			<br><br>
+			{% comment %} Information and utilities {% endcomment %}
+			{% comment %} Used for downloading files and linking to github information {% endcomment %}
 			<h2>Info & Utilities</h2>
         	<a href="https://github.com/keleuk/GlobalCircuit/wiki/Uplink-Commands"><button>Uplink Command Instructions</button></a>
 			<br><br>

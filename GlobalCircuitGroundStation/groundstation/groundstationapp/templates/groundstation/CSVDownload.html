@@ -1,12 +1,14 @@
 <!doctype html>
 <html>
     <head>
+    {% comment %} Loading static data {% endcomment %}
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'groundstation/csvFiles.css' %}">
     <script type="text/javascript" src="{% static 'groundstation/csvFiles.js' %}"></script>
     <title>CSV Files</title>
     </head>
     <body>
+    {% comment %} Cards for downloading datasets as CSV files {% endcomment %}
       <div class="download_grid">
         {% for card in tableCards %}
         <div class = "download_card">
@@ -14,12 +16,14 @@
             <h2>{{card.name}}</h2>
             <span>{{card.description}}</span><br>
             <input type="submit" value="Download"><br><br>
+            {% comment %} mcuID selection {% endcomment %}
             <label for="mcu_id">mcuID: </lable>
             <select id="mcu_id" name="mcu_id">
               {% for option in mcuIDs %}
               <option value="{{option}}">{{option}}</option>
               {% endfor %}
             </select><br>
+            {% comment %} Time Window selection {% endcomment %}
             <input type="checkbox" id="use_time_frame_{{card.name}}" name = "use_time_frame" onclick="use_time_frame_clicked('{{card.name}}')">
             <label for="use_time_frame_{{card.name}}">Filter by Time</lable><br>
             <div id="time_frame_{{card.name}}" hidden>
@@ -53,6 +57,7 @@
             <textarea id="requestedData" name="requestedData" value={{card.table}} hidden>{{card.table}}</textarea>
           </form>
           {% comment %} <a href="/downloadFile/?requestedData={{card.table}}"><button>Download</button></a> {% endcomment %}
+          {% comment %} Data Set Contents {% endcomment %}
           <h3>Table Contents:</h3>
           <ul>
             {%for item in card.items%}

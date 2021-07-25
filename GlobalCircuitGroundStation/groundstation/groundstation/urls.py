@@ -16,14 +16,15 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+#view and asset imports
 from groundstationapp.views import homepage, gps, fastPost, horizontal, vertical, conductivity, submitfunc, dumpfunc, scrapefunc, utf8js, theBest, greyBalloon, redBalloon, greyBalloonClicked, redBalloonClicked, dashboard, dashboardV6, kmlFile
 from groundstationapp.newGraph import newGraph, oldGoogleMap, googleMap, badGoogleMap, quickDescentRate, descentRate, avgBalloonLocation, csvFiles
 from groundstationapp.newGraph import Request, IridiumTransmission, RawPacket, PacketV6, PacketV6Units, Measurements, MeasurementsUnits, ConductivityMeasurements, ConductivityMeasurementsUnits
 from groundstationapp.graphV6 import graphV6, getNewPackets
 from groundstationapp.FileDownloads import fileDownloadView, downloadFile
-
 from groundstationapp.v2_graphV6  import v2_graphV6
 
+#routes
 urlpatterns = [
   url(r'^$', homepage, name='homepage'),
   #url(r'^gps/$', gps, name='gps'),

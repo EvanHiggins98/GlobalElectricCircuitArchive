@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
+# Views used for the groundstation
 
 from django.conf.urls import handler400
 from django.http.response import HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
@@ -36,9 +36,11 @@ from . import MapPoints
 
 # Create your views here.
 
+# KML File view
 def kmlFile(request):
   return HttpResponse(MapPoints.kmlFileString(), content_type="text/plain")
 
+# Old dashboard
 def dashboard(request):
   
   mostRecentPacket = models.Packet.objects.order_by('-global_id__transmit_time').select_related('global_id')[0]
@@ -65,7 +67,8 @@ def dashboard(request):
   context={'IridiumData': mostRecentIridiumData, 'Packet': mostRecentPacket, 'Status': mostRecentStatus, 'SlowMeasurement': mostRecentSlowMeasurement, 'SupData': modifiedSupData}
   
   return render(request, 'groundstation/dashboard.html', context)
-  
+
+# Legacy dashboard
 def dashboardV6(request):
   formFields = {}
   
@@ -146,28 +149,31 @@ def dashboardV6(request):
            }
   
   return render(request, 'groundstation/dashboardV6.html', context)
-
+# grey balloon image
 def greyBalloon(request):
   return render(request, 'groundstation/GreyBalloon.png', content_type='image/png')
+# red balloon image
 def redBalloon(request):
   return render(request, 'groundstation/RedBalloon.png', content_type='image/png')
+# grey balloon clicked image
 def greyBalloonClicked(request):
   return render(request, 'groundstation/GreyBalloonClicked.png', content_type='image/png')
+# red balloon clicked image
 def redBalloonClicked(request):
   return render(request, 'groundstation/RedBalloonClicked.png', content_type='image/png')
-
+# utf8js view
 def utf8js(request):
   return render(request, 'groundstation/utf8.js')
-  
+# json file  
 def theBest(request):
   return render(request, 'groundstation/TheBest.json')
-
+# homepage of site
 def homepage(request):
   imei_list = ['None', '300234065252710', '300434063219840', '300434063839690', '300434063766960', '300434063560100', '300434063184090', '300434063383330', '300434063185070', '300434063382350', '300234063778640', '888888888888888']
   id_list = ['None', '1','2','3','4']
   context = {'serverType': secrets.serverType, 'currentTimeString': datetime.utcnow().strftime("%y-%m-%dT%H:%M:%S"), 'imei_list': imei_list,'id_list':id_list}
   return render(request, 'groundstation/homepage.html', context)
-
+# legacy gps
 def gps(request):    # Change to google maps
   data = [
         ['Time', 'Latitude', 'Longitude']  # create a list to hold the column names and data for the axis names
@@ -189,7 +195,8 @@ def gps(request):    # Change to google maps
   
   context = {'chart': chart}
   return render(request, 'groundstation/gps.html', context) # rendering the chart when a request has gone through for this page, and using the mapPlot.html to render it
-  
+
+# dump func view  
 @csrf_exempt
 def dumpfunc(request):
   minPack = request.GET.get('minPack', '1')
@@ -229,7 +236,8 @@ def dumpfunc(request):
    
   context = {'packetList': packetList, 'binary': binary}
   return render(request, 'groundstation/dump.json', context)
-    
+
+# scrape function view    
 @csrf_exempt
 def scrapefunc(request):
   minPack = request.GET.get('minPack', '1')
@@ -244,7 +252,7 @@ def scrapefunc(request):
   
   return render(request, 'groundstation/scrape.html', context)
 
-
+#submit function for posting data
 @csrf_exempt
 def submitfunc(request):
   if request.method == 'POST':
@@ -308,7 +316,7 @@ def submitfunc(request):
       print(r.content)
     return render(request, 'groundstation/submit.html', context)
 
-
+#fast post view
 @csrf_exempt
 def fastPost(request):
   context = {'text': ''}
@@ -342,7 +350,8 @@ def fastPost(request):
   postfuncV6(requestedRequest)
   print(("----"*4) + "-END FASTPOST-" + ("----"*4))
   return render(request, 'groundstation/post.html', context)
-  
+
+# legacy posting function  
 @background(schedule=10)
 def postfunc(requestedRequest):
   context = {'text': 'none'}
@@ -448,7 +457,7 @@ def postfunc(requestedRequest):
     
     
     
-  
+# post function for storing data  
 @background(schedule=10)
 def postfuncV6(requestedRequest):
   if (requestedRequest["request.POST"]):
@@ -615,6 +624,7 @@ def postfuncV6(requestedRequest):
     return #render(request, 'groundstation/post.html', {'text': errorMessage})
   return #render(request, 'groundstation/post.html', {'text': 'None'})
   
+# horizontal view
 def horizontal(request):
   data = [
         ['Time', 'H1', 'H2', 'HD']   # create a list to hold the column names and data for the axis names
@@ -650,6 +660,7 @@ def horizontal(request):
 
   return render(request, 'groundstation/graph.html', context)
   
+# vertical view
 def vertical(request):
   data = [
         ['Time', 'V1', 'V2', 'VD']   # create a list to hold the column names and data for the axis names
@@ -686,6 +697,7 @@ def vertical(request):
   context = {'chart': chart, 'title': chartTitle, 'description': chartDescription}
   return render(request, 'groundstation/graph.html', context)
 
+# conductivity view
 def conductivity(request):
   data = [
         ['Time', 'V1', 'V2' ]  # create a list to hold the column names and data for the axis names

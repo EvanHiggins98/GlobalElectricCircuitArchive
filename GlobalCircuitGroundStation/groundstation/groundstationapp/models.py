@@ -5,9 +5,9 @@ from django.db import models
 
 # Create your models here.
 
-#BEGIN OLD MODELS FROM BEFORE PACKET V6
-#BEGIN OLD MODELS FROM BEFORE PACKET V6
-#BEGIN OLD MODELS FROM BEFORE PACKET V6
+# Models for mySQL db
+# Old models kept for archiving
+
 class IridiumData(models.Model):
   id = models.AutoField(primary_key=True)
   transmit_time = models.DateTimeField()
