@@ -1,3 +1,4 @@
+# Newest version of the dashboard used to display graphs
 from django.shortcuts import render
 from django.db.models import aggregates, Avg, Max, Min
 from django.http.response import JsonResponse
@@ -17,7 +18,7 @@ from datetime import datetime
 from datetime import timedelta
 
 import copy
-
+# List of signal info
 signalList = [
               'NONE'                                        ,
               'Request___processing_duration'               ,
@@ -119,7 +120,7 @@ signalList = [
               'ConductivityMeasurementsUnits___vert1'       ,
               'ConductivityMeasurementsUnits___vert2'       ,
               ]
-
+# List of signal definitions
 signalDefinitions = {
                     'NONE'                                        : None,
                     'Request___processing_duration'               :{
@@ -538,14 +539,17 @@ signalDefinitions = {
                                                                    'description' : '',
                                                                    },
                     }
-                    
+
+# Javascript Datetime Conversion
 def sillyJavascriptDatetimeString(datetimeObject):
   tDTS = datetimeObject.strftime("Date(%Y, %m, %d, %H, %M, %S, %f)")
   tempDateString = tDTS[:11] + '{0:02d}'.format(int(tDTS[11:13])-1) + tDTS[13:31] + '{0:03d}'.format(int(tDTS[31:37])//1000) + tDTS[37:]
   return tempDateString
 
+# Javascript datetime alias
 sJDS = sillyJavascriptDatetimeString
 
+# Function to extract signal value from a row of data
 def signalValue(dataRow, signalId):
   if signalId == 'IridiumTransmission___cep':
     return dataRow.cep
@@ -564,6 +568,7 @@ def signalValue(dataRow, signalId):
   
   return None
 
+# Creates data for template with gps time as the horizontal axis
 def createDataFromTime(sigID, filteredDataRows, tableName, chartOptions):
   toolTipColumn = {'type': 'string', 'role':'tooltip', 'p':{'html': True}}
   dataHeader = [[{'type': 'datetime', 'label': 'Time'}]]
@@ -602,6 +607,7 @@ def createDataFromTime(sigID, filteredDataRows, tableName, chartOptions):
 
   return SimpleDataSource(data=dataList)
 
+# Creates data for template with iridium time as the horizontal axis
 def createDataFromIridiumTime(sigID, filteredDataRows, tableName, chartOptions):
   toolTipColumn = {'type': 'string', 'role':'tooltip', 'p':{'html': True}}
   dataHeader = [[{'type': 'datetime', 'label': 'Time'}]]
@@ -640,6 +646,7 @@ def createDataFromIridiumTime(sigID, filteredDataRows, tableName, chartOptions):
 
   return SimpleDataSource(data=dataList)
 
+# Creates data for template with the index as the horizontal axis
 def createDataFromSequence(sigID, filteredDataRows, tableName, chartOptions):
   toolTipColumn = {'type': 'string', 'role':'tooltip', 'p':{'html': True}}
   dataHeader = [[{'type': 'number', 'label': 'Sequence'}]]
@@ -668,6 +675,7 @@ def createDataFromSequence(sigID, filteredDataRows, tableName, chartOptions):
 
   return SimpleDataSource(data=dataList)
 
+# Creates data for an async update
 def createUpdateData(sigID, filteredDataRows, tableName):
   
   sigDef = signalDefinitions[sigID]
@@ -686,9 +694,12 @@ def createUpdateData(sigID, filteredDataRows, tableName):
 
   return dataList
   
+# Current method of creating data
 createData=createDataFromTime
 
+# Dashboard view
 def graphV6(request):
+  # Prep variables
   data = []
   onlyWantedData = []
   
@@ -713,6 +724,8 @@ def graphV6(request):
   # formFields['IMEI']['options'] = ['ANY', '300234065252710', '300434063219840', '300434063839690', '300434063766960', '300434063560100', '300434063184090', '300434063383330', '300434063185070', '300434063382350', '300234063778640', '888888888888888']
   # formFields['IMEI']['selected'] = request.GET.get('IMEI', 'ANY')
   
+  # Prep form field variables
+
   formFields['leftAxisSignal_A'] = {}
   formFields['leftAxisSignal_A']['label'] = 'Left Axis Signal A'
   formFields['leftAxisSignal_A']['options'] = signalList
@@ -743,6 +756,8 @@ def graphV6(request):
   formFields['rightAxisSignal_C']['options'] = signalList
   formFields['rightAxisSignal_C']['selected'] = request.GET.get('rightAxisSignal_C', 'NONE')
   
+  # Set up time window
+
   filterOptions = {}
   
   filterOptions['windowStartRelative'] = request.GET.get('windowStartRelative', 'false')
@@ -779,9 +794,8 @@ def graphV6(request):
   
   windowEndTime = datetime.strptime(windowEndTimeString, "%Y-%m-%d %H:%M:%S")
   
-  # chartTitle = "Battery Voltage"
-  # chartDescription = "Measured voltages of the batteries."
-  
+  # Setting up data and filtering it
+
   filteredDataRows = {}
   
   filteredDataRows['Request'] = models.Request.objects.all()
@@ -794,6 +808,7 @@ def graphV6(request):
   filteredDataRows['ConductivityMeasurementsUnits'] = models.ConductivityMeasurementsUnits.objects.all()
   CommandHistory = models.UplinkRequest.objects.all()
   
+  # Filter by mcuID if one given
   if(mcuID != 'None'):
     filteredDataRows['Request'] = filteredDataRows['Request'].filter(child_transmission__child_packet__mcu_id=int(mcuID))
     filteredDataRows['IridiumTransmission'] = filteredDataRows['IridiumTransmission'].filter(child_packet__mcu_id=int(mcuID))
@@ -803,7 +818,8 @@ def graphV6(request):
     filteredDataRows['MeasurementsUnits'] = filteredDataRows['MeasurementsUnits'].filter(parent_measurements__parent_packet__mcu_id=int(mcuID))
     filteredDataRows['ConductivityMeasurements'] = filteredDataRows['ConductivityMeasurements'].filter(parent_packet__mcu_id=int(mcuID))
     filteredDataRows['ConductivityMeasurementsUnits'] = filteredDataRows['ConductivityMeasurementsUnits'].filter(parent_conductivity_measurements__parent_packet__mcu_id=int(mcuID))
-    
+  
+  # Filter by IMEI if one given
   if(IMEI != 'None'):
     filteredDataRows['Request'] = filteredDataRows['Request'].filter(child_transmission__imei=int(IMEI))
     filteredDataRows['IridiumTransmission'] = filteredDataRows['IridiumTransmission'].filter(imei=int(IMEI))
@@ -814,9 +830,11 @@ def graphV6(request):
     filteredDataRows['ConductivityMeasurements'] = filteredDataRows['ConductivityMeasurements'].filter(parent_packet__parent_transmission__imei=int(IMEI))
     filteredDataRows['ConductivityMeasurementsUnits'] = filteredDataRows['ConductivityMeasurementsUnits'].filter(parent_conductivity_measurements__parent_packet__parent_transmission__imei=int(IMEI))
   
+  # Filter time window and order by time
   for key in filteredDataRows.keys():
     filteredDataRows[key] = filteredDataRows[key].filter(time__gte=windowStartTime).filter(time__lte=windowEndTime).order_by('-time')
   
+  # Measurement conversions
   for row in filteredDataRows['MeasurementsUnits']:
     row.vert1 = (row.vert1 - 2.048)    / (-0.5)
     row.vert2 = (row.vert2 - 2.048)    / (-0.5)
@@ -824,17 +842,10 @@ def graphV6(request):
     row.horiz1 = (row.horiz1 - 2.048)  / (-1.5)
     row.horiz2 = (row.horiz2 -  2.048) / (-1.5)
     row.horizD = (row.horizD - 2.048)  / (15)
-  # uncutData = models.PacketV6Units.objects.filter(time__gte=datetime(2019, 8, 29)).all()
-
-  # unfilteredData = models.PacketV6.objects.all()
-  # filteredData = unfilteredData
-  # if(formFields['mcuID']['selected'] != 'ANY'):
-    # filteredData = filteredData.filter(mcu_id=int(formFields['mcuID']['selected']))
-  # if(formFields['IMEI']['selected'] != 'ANY'):
-    # filteredData = filteredData.filter(parent_transmission__imei=int(formFields['IMEI']['selected']))
   
   charts = {}
 
+  # Set up graph options
   chartOptions['tooltip'] = {
     'isHtml': True,
     'textStyle':{
@@ -856,11 +867,13 @@ def graphV6(request):
 
   chartOptions['height'] = '450px'
 
+  # Used for tooltips
   toolTipColumn = {'type': 'string', 'role':'tooltip', 'p':{'html': True}}
   
-  
+  # Used for header of data
   dataHeader = [[{'type': 'datetime', 'label': 'Time'}]]
   
+  # Chart bookkeeping data
   chartTitle = ""
   chartTitleList = []
   chartDescription = ""
@@ -875,11 +888,15 @@ def graphV6(request):
   rightAxisTitle = ""
   rightAxisTitleList = []
   
-  #Loop through all the selected signals to create the dataHeader
+  # Used for custom graphs
+  # Loop through all the selected signals to create the dataHeader
   for signal in ['leftAxisSignal_A', 'leftAxisSignal_B', 'leftAxisSignal_C', 'rightAxisSignal_A', 'rightAxisSignal_B', 'rightAxisSignal_C']:
     signalId = formFields[signal]['selected']
+    # Skip empty signal axis
     if( signalId == 'NONE'):
       continue
+    
+    # Organize axis information
     sigDef = signalDefinitions[signalId]
     
     signalAxisTitle = sigDef['name'] + ' (' + sigDef['units'] + ') '
@@ -903,13 +920,14 @@ def graphV6(request):
     chartTitleList.append(sigDef['name']) 
     chartDescriptionList.append(sigDef['name'] + " (" + sigDef['description'] + ") " )
   
+  # Setting up title an description
   chartTitle = ', '.join(chartTitleList)
   chartDescription = "A graph comprised of  the signals " + ', '.join(chartDescriptionList) + '.'
   
   leftAxisTitle = ', '.join(leftAxisTitleList)
   rightAxisTitle = ', '.join(rightAxisTitleList)
   
-  
+  # Set up chart options for axes
   chartOptions["vAxes"] = {0: {"title": leftAxisTitle}, 1: {"title": rightAxisTitle}}
   
   dataArray = []
@@ -961,7 +979,7 @@ def graphV6(request):
 
   # charts['chart_main'] = LineChart(data_source_main, 'chart_main', options=chartOptions)
 
-
+  # Set up premade graph data
   chartOptions['series'] = {0:{"targetAxisIndex": 0}}
   data_source_V1C = createData('ConductivityMeasurementsUnits___vert1', filteredDataRows, 'ConductivityMeasurementsUnits',chartOptions)
   charts['chart_V1C'] = LineChart(data_source_V1C, 'chart_V1C', options=copy.deepcopy(chartOptions))
@@ -1050,6 +1068,7 @@ def graphV6(request):
   data_source_packet_sequence = createData('PacketV6___sequence_id', filteredDataRows, 'PacketV6', chartOptions)
   charts['chart_sequenceID'] = LineChart(data_source_packet_sequence, 'chart_sequenceID', options=copy.deepcopy(chartOptions))
 
+  # Set up data aggregates
   data_aggregates = {}
   data_aggregates['Min'] = filteredDataRows['Measurements'].aggregate(Min('vert1'),Min('vert2'),Min('vertD'),
                                                                    Min('compassX'),Min('compassY'),Min('compassZ'),
@@ -1074,6 +1093,7 @@ def graphV6(request):
                   {'name' : 'Vertical Velocity', 'units' : 'm/s', 'description' : ''},
                   {'type': 'string', 'role':'tooltip', 'p':{'html': True}}]]  
   
+  # Calculate vertical velocity data
   vertical_velocity_array = []
   for index in range(len(filteredDataRows['PacketV6'])-1):
     row1 = filteredDataRows['PacketV6'][index]
@@ -1081,10 +1101,12 @@ def graphV6(request):
     data = [sJDS(row1.time)]
     sigValue1 = signalValue(row1,'PacketV6___altitude')
     sigValue2 = signalValue(row2,'PacketV6___altitude')
+    # Saftey Check & velocity Calc
     if(row1.time != row2.time):
       sigVal=(sigValue1-sigValue2)/((row1.time-row2.time).total_seconds())
     else:
         sigVal=0
+    # Add value and setup tooltip info
     data.append(sigVal)
     toolTipString = row1.time.strftime("%b. %d, %Y, %H:%M:%S") + ' - ' + row2.time.strftime("%b. %d, %Y, %H:%M:%S\n Vertical Velocity: " + str(sigVal) +'m/s')
     data.append(toolTipString)
@@ -1095,10 +1117,12 @@ def graphV6(request):
   data_source_vertical_velocity = SimpleDataSource(data=vertical_velocity_data)
   charts['chart_vertical_velocity'] = LineChart(data_source_vertical_velocity,'chart_vertical_velocity', options=copy.deepcopy(chartOptions))
 
+  # Last vertical velocity for displaying in numeric form
   last_vertical_velocity = None
   if (vertical_velocity_array):
     last_vertical_velocity = vertical_velocity_array[0][1] 
 
+  # Color of banner to easily identify dashboards
   color = 'grey'
 
   if(IMEI != 'None'):
@@ -1116,7 +1140,7 @@ def graphV6(request):
   if (mcuID == '4'):
     color = 'purple'
 
-  
+  # Set up extra data informations
   last_packet_time='None'
   for key in filteredDataRows:
     if(filteredDataRows[key]):
@@ -1132,6 +1156,7 @@ def graphV6(request):
     CommandHistory = CommandHistory.filter(imei=int(IMEI))
     last_packet_time = sJDS(filteredDataRows['PacketV6'].time)
 
+  # Data context for view
   context = {
     'charts': charts,
     'title': chartTitle,
@@ -1150,13 +1175,10 @@ def graphV6(request):
     'last_vert_vel' : last_vertical_velocity,
     'last_packet_time' : last_packet_time
     }
-  #if request.GET.get('maxTime',None):
-  # context['maxTime'] = request.GET.get('maxTime',None)
-  #if request.GET.get('minTime',None):
-  # context['minTime'] = request.GET.get('minTime',None)
 
   return render(request, 'groundstation/newGraph.html', context)
 
+# Function for getting new packets for async update
 def getNewPackets(request):
   
   lastDateTime = request.GET.get('lastDateTime', None)
@@ -1165,6 +1187,8 @@ def getNewPackets(request):
 
     if(mcuID != None):
       dateTimeObj = datetime.strptime(lastDateTime, "%a, %d %b %Y %H:%M:%S")
+
+      # Setting up filtered data
       filteredDataRows = {}
 
       filteredDataRows['Request'] = models.Request.objects.all()
@@ -1188,6 +1212,7 @@ def getNewPackets(request):
       for key in filteredDataRows.keys():
         filteredDataRows[key] = filteredDataRows[key].filter(time__gt=dateTimeObj).order_by('-time')
 
+      # Creating update data
       data={}
 
       data['chart_V1C'] = createUpdateData('ConductivityMeasurements___vert1', filteredDataRows, 'ConductivityMeasurements')
@@ -1238,7 +1263,8 @@ def getNewPackets(request):
       data['chart_ext_temp'] = createUpdateData('PacketV6Units___external_temp', filteredDataRows, 'PacketV6')
 
       data['chart_RB_temp'] = createUpdateData('PacketV6Units___rockblock_temp', filteredDataRows, 'PacketV6')
-
+      
+      # Aggregate data
       data_aggregates = {}
       data_aggregates['Min'] = filteredDataRows['Measurements'].aggregate(Min('vert1'),Min('vert2'),Min('vertD'),
                                                                       Min('compassX'),Min('compassY'),Min('compassZ'),
@@ -1259,6 +1285,7 @@ def getNewPackets(request):
                                                                       Max('compassX'),Max('compassY'),Max('compassZ'),
                                                                       Max('horiz1'),Max('horiz2'),Max('horizD'))
       
+      # Vertical velocity calculations
       last_vert_vel = 0
       if(len(filteredDataRows['PacketV6'])>1):
         vertical_velocity_array = []
@@ -1281,7 +1308,7 @@ def getNewPackets(request):
       for key in filteredDataRows:
           if(filteredDataRows[key]):
             jsonData[key] = serializers.serialize('json',filteredDataRows[key])
-
+      # Data context for view
       dataContext = {
         'data': jsonData,
         'chartData': data,
@@ -1289,7 +1316,7 @@ def getNewPackets(request):
         'last_vertVel': last_vert_vel
       }
 
-      
+      #if there is new data send it. If not send status
       if(len(filteredDataRows['PacketV6'])>0):
         return JsonResponse({'status': 'SUCCESS','isNewData': True, 'newData': dataContext}, safe=False)
       else:

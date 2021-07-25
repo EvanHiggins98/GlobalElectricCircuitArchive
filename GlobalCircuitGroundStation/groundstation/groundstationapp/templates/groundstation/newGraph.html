@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 	<head>
+		{% comment %} Loading static data and libraries {% endcomment %}
 		{% load static %}
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -12,6 +13,7 @@
 		<script type="text/javascript">
 			{% if last_packet_time != 'None' %} newestPacketTime = new {{last_packet_time}} {% endif %}
 		</script>
+		{% comment %} prepare chart data {% endcomment %}
 		<script type="text/javascript">
 			google.setOnLoadCallback(prepareCharts);
 			{% if IMEI != 'None' %} IMEI = {{IMEI}} {% endif %}
@@ -61,6 +63,7 @@
 		<div class="navigation">
 			<a href="https://gec.evanhiggins.net">Homepage</a>
 		</div>
+		{% comment %} Identifying banner {% endcomment %}
 		<div class="Device_Identifier_Border" style="background-color: {{identifier_color}}">
 			<span class="Device_Identifier">
 				{% if IMEI != 'None' %} IMEI: {{IMEI}} {% endif %}
@@ -68,6 +71,7 @@
 				{% if mcuID != 'None' %} mcuID: {{mcuID}} {% endif %}
 			</span>
 		</div>
+		{% comment %} Time window controls {% endcomment %}
 		<form class="timeControls">
 			<div class='TimeWindowControls'>
 				Data Time Frame (UTC): <br>
@@ -98,11 +102,14 @@
 					{% endfor %}</select>
 				</div>
 				<input type="submit" value="Apply Filters">
+				{% comment %} Hidden device information to keep user from mixing up devices {% endcomment %}
 				<textarea id="IMEI" name="IMEI" hidden>{{IMEI}}</textarea>
 				<textarea id="mcuID" name="mcuID" hidden>{{mcuID}}</textarea>
 			</div>
 		</form>
+		{% comment %} auto refresh option {% endcomment %}
 		<input type="checkbox" id="auto_fresh_check" name="auto_refresh" value="Auto Refresh"> Auto Refresh
+		{% comment %} Data Tabs {% endcomment %}
 		<div class="tab">
 			<button class="tablinks" onclick="openTab(event, 'Main')" id="MainTab">Main</button>
 			<button class="tablinks" onclick="openTab(event, 'HCD')" id="HCDTab">Horizontal & Compass Graphs</button>
@@ -116,6 +123,7 @@
 			{% comment %} <button class="tablinks" onclick="openTab(event, 'Raw')">Raw</button> {% endcomment %}
 			
 		</div>
+		{% comment %} Main Tab {% endcomment %}
 		<div id="Main" class="tabcontent">
 			<div class="grid_main">
 				<div class="col-1_main">
@@ -429,6 +437,7 @@
 				setInterval(function(){ updateBoxes(); }, 50);
 			</script>
 		</div>
+		{% comment %} Horizontal and Compass Data Tab {% endcomment %}
 		<div id="HCD" class="tabcontent">
 			<div class="grid_graphs">
 				<div id="chart_H1"></div>
@@ -439,6 +448,7 @@
 				<div id="chart_CZ"></div>
 			</div>
 		</div>
+		{% comment %} Probe Data Tab {% endcomment %}
 		<div id="Probes" class="tabcontent">
 			<div class="grid_graphs">
 				<div id="chart_V1C"></div>
@@ -448,6 +458,7 @@
 				<div id="chart_VD"></div>
 			</div>
 		</div>
+		{% comment %} Location Data Tab {% endcomment %}
 		<div id="Location" class="tabcontent">
 			<div class="grid_graphs">
 				<div id="chart_lat"></div>
@@ -458,6 +469,7 @@
 				<div id="chart_sequenceID"></div>
 			</div>
 		</div>
+		{% comment %} Temperature Data Tab {% endcomment %}
 		<div id="Temperature" class="tabcontent">
 			<div class="grid_graphs">
 				<div id="chart_alt_temp"></div>
@@ -470,6 +482,7 @@
 				<div id="chart_RB_temp"></div>
 			</div>
 		</div>
+		{% comment %} Voltage and Current Data Tab {% endcomment %}
 		<div id="Voltage_Current" class="tabcontent">
 			<div class="grid_graphs">
 				<div id="chart_positive_7V_volts"></div>
@@ -479,6 +492,7 @@
 				<div id="chart_3V3_current"></div>
 			</div>
 		</div>
+		{% comment %} Uplink Controls Tab {% endcomment %}
 		<div id="Uplink" class="tabcontent">
 			<h2>Uplink</h2>
 			<div class="uplink_center">
@@ -526,6 +540,7 @@
 			</div>
 			<a href="https://github.com/keleuk/GlobalCircuit/wiki/Uplink-Commands" target="_blank" rel="noopener noreferrer"><button>Uplink Command Instructions</button></a>
 		</div>
+		{% comment %} Advanced Data Breakdown tab {% endcomment %}
 		<div id="Advanced" class="tabcontent">
 			<div class="grid_advanced">
 				<div class="col-1_advanced">
@@ -815,6 +830,7 @@
 				</div>
 			</div>
 		</div>
+		{% comment %} Make Your Own Graph Tab (Legacy) {% endcomment %}
 		<div id="MYOG" class="tabcontent">
 			{% comment %} <div>
 				<h1>{{ title }} </h1>
@@ -834,8 +850,10 @@
 				
 			</form> {% endcomment %}
 		</div>
+		{% comment %} Raw Data Tab (Unused) {% endcomment %}
 		<div id="Raw" class="tabcontent">
 		</div>
+		{% comment %} Device Identification Banner {% endcomment %}
 		<div class="Device_Identifier_Border" style="background-color: {{identifier_color}}">
 			<span class="Device_Identifier">
 				{% if IMEI != 'None' %} IMEI: {{IMEI}} {% endif %}

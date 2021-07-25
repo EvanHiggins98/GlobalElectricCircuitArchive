@@ -1,3 +1,5 @@
+#Functions used for organizing data and packaging for download
+
 from django.http.response import HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
 from . import models
@@ -11,12 +13,15 @@ from datetime import timedelta
 
 from django.http import StreamingHttpResponse
 
-
-
+#psuedo buffer used to stream csv files
 class CSVBuffer:
     def write(self, value):
         return value
 
+#iterates through a set of items using a given:
+# serializer
+# psuedo buffer
+# and header row info for the csv file
 def iter_items(items, serializer, pseudo_buffer,header):
     writer = csv.DictWriter(pseudo_buffer, fieldnames=header)
     yield writer.writerow(dict(zip(header,header)))
@@ -24,6 +29,7 @@ def iter_items(items, serializer, pseudo_buffer,header):
     for item in items:
         yield writer.writerow(serializer(item))
 
+# All the query sets sorted by time
 modelQuerySets = {
     'Request':models.Request.objects.all().order_by("time"),
     'IridiumTransmission':models.IridiumTransmission.objects.all().order_by("time"),
@@ -37,9 +43,11 @@ modelQuerySets = {
     'UplinkRequest':models.UplinkRequest.objects.all().order_by("time"),
 }
 
+#Class used for streaming csv files
 class CSVStream:
     def export(self, filename, requestedTable, serializer, header, mcuID, use_time_frame, startTime, endTime):
         Qset = modelQuerySets[requestedTable]
+        #filter by mcuID if one given
         if(mcuID != 'ALL'):
             if(requestedTable=='Request'):
                 Qset = Qset.filter(child_transmission__child_packet__mcu_id=int(mcuID)).select_related('child_transmission__child_packet')
@@ -59,16 +67,16 @@ class CSVStream:
                 Qset = Qset.filter(parent_packet__mcu_id=int(mcuID)).select_related('parent_packet')
             if(requestedTable=='ConductivityMeasurementsUnits'):
                 Qset = Qset.filter(parent_conductivity_measurements__parent_packet__mcu_id=int(mcuID)).select_related('parent_conductivity_measurements__parent_packet')
-        
+        #filter to specific time frame if one given
         if(use_time_frame):
             Qset = Qset.filter(time__gte=startTime).filter(time__lte=endTime)
-
+        #creating streaming http response for streaming the csv file
         response = StreamingHttpResponse(streaming_content=(iter_items(Qset,serializer,CSVBuffer(),header)),
                                          content_type="text/csv")
         response['Content-Disposition'] = f"attachment; filename={filename}.csv"
         return response
 
-
+# Server Request Serializer
 def csv_serializer_Request(data):
     mcuID = 'None'
     try:
@@ -90,6 +98,7 @@ def csv_serializer_Request(data):
         'response_status_code':data.response_status_code,
     }
 
+# Iridium Transmission Serializer
 def csv_serializer_IridiumTransmission(data):
     mcuID = 'None'
     try:
@@ -111,6 +120,7 @@ def csv_serializer_IridiumTransmission(data):
         'transmitted_via_satellite':data.transmitted_via_satellite,
     }
 
+# Raw Packet Data Serializer
 def csv_serializer_RawPacket(data):
     mcuID = 'None'
     try:
@@ -126,6 +136,7 @@ def csv_serializer_RawPacket(data):
         'hexdata':data.hexdata,
     }
 
+# Packet Data Serializer
 def csv_serializer_PacketV6(data):
     return {
         'parent_transmission_id':data.parent_transmission_id,
@@ -160,6 +171,7 @@ def csv_serializer_PacketV6(data):
         'rockblock_temp':data.rockblock_temp,
     }
 
+# Unit Converted Packet Data Serializer
 def csv_serializer_PacketV6Units(data):
     return {
         'parent_packet_v6_id':data.parent_packet_v6_id,
@@ -194,6 +206,7 @@ def csv_serializer_PacketV6Units(data):
         'rockblock_temp':data.rockblock_temp,
     }
 
+# Measurement Data Serializer
 def csv_serializer_Measurements(data):
     return {
         'parent_packet_id':data.parent_packet_id,
@@ -211,6 +224,7 @@ def csv_serializer_Measurements(data):
         'horizD':data.horizD,
     }
 
+# Unit Converted Measurement Data Serializer
 def csv_serializer_MeasurementsUnits(data):
     return {
         'parent_measurements_id':data.parent_measurements_id,
@@ -228,6 +242,7 @@ def csv_serializer_MeasurementsUnits(data):
         'horizD':data.horizD,
     }
 
+# Conductivity Measurement Data Serializer
 def csv_serializer_ConductivityMeasurements(data):
     return {
         'parent_packet_id':data.parent_packet_id,
@@ -238,6 +253,7 @@ def csv_serializer_ConductivityMeasurements(data):
         'vert2':data.vert2,
     }
 
+# Unit Converted Conductivity Measurement Data Serializer
 def csv_serializer_ConductivityMeasurementsUnits(data):
     return {
         'parent_conductivity_measurements_id':data.parent_conductivity_measurements_id,
@@ -248,6 +264,7 @@ def csv_serializer_ConductivityMeasurementsUnits(data):
         'vert2':data.vert2,
     }
 
+# Uplink Request Serializer
 def csv_serializer_UplinkRequest(data):
     return{
         'id':data.id,
@@ -258,6 +275,7 @@ def csv_serializer_UplinkRequest(data):
         'success':data.success,
     }
 
+# A dictionary of the serialization functions
 serialzerFunctions = {
     'Request':csv_serializer_Request,
     'IridiumTransmission':csv_serializer_IridiumTransmission,
@@ -271,6 +289,7 @@ serialzerFunctions = {
     'UplinkRequest':csv_serializer_UplinkRequest,
 }
 
+# Headers for each csv file data type
 modelHeaders = {
     'Request':['id','mcu_id','request_time','processing_duration','forwarded_for_address',
                 'forwarded_host_address','forwarded_server_address','remote_address',
@@ -307,8 +326,7 @@ modelHeaders = {
                 'message','success'],
 }
 
-
-
+# Dictionary of File Names
 fileNames = {
     'Request':'gec_groundstation_requests',
     'IridiumTransmission':'gec_iridium_transmissions',
@@ -322,6 +340,7 @@ fileNames = {
     'UplinkRequest':'gec_uplink_requests',
 }
 
+# Download Card information for template
 downloadCards = [
     {
         'name':'groundstation_requests',
@@ -385,6 +404,7 @@ downloadCards = [
     },
 ]
 
+# Function to get the time window to filter
 def getTimeWindow(request):
     utcTimeNow = datetime.utcnow()
     windowStartAtDate = request.GET.get('windowStartAtDate',(utcTimeNow-(timedelta(hours=1))).strftime("%Y-%m-%d"))
@@ -412,6 +432,7 @@ def getTimeWindow(request):
 
     return datetime.strptime(windowStartTimeString, "%Y-%m-%d %H:%M:%S"), datetime.strptime(windowEndTimeString, "%Y-%m-%d %H:%M:%S")
 
+# Actual File Download function
 def downloadFile(request):
     if request.method == 'GET':
         requestedData = request.GET.get('requestedData', 'ALL')
@@ -432,6 +453,7 @@ def downloadFile(request):
         print("This is not a GET request.")
         return(HttpResponseBadRequest())
 
+# Download File View
 def fileDownloadView(request):
     utcTimeNow =datetime.utcnow()
 

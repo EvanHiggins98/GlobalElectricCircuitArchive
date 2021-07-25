@@ -1,5 +1,8 @@
 import struct
 
+# Structure used to pack and unpack some data
+# Old packet versions kept for archiving
+
 PACKET_VERSION=3
 def unpack(f):
     values={}

@@ -1,9 +1,12 @@
+//When Document is loaded set up necessary functions
 $(document).ready(function(){
+    //uplink function
     $('#uplink_form').on('submit', function(e){
         e.preventDefault();
         console.log("uplink message sent")
         send_uplink();
     })
+    //auto_refresh selection function
     $('#auto_fresh_check').click(function() {
 
         localStorage.setItem('auto_refresh',$('#auto_fresh_check').prop('checked'))
@@ -13,9 +16,11 @@ $(document).ready(function(){
     if(localStorage.getItem('auto_refresh')=='true'){
         $("#auto_fresh_check").prop("checked", true);
     }
+    //auto refresh
     setInterval(function(){ if($('#auto_fresh_check').prop('checked')){window.location.reload();} }, 60000);
 })
 
+//draw chart dictionary
 drawChartFunctions = {
     "Main" : drawMainCharts,
     "HCD" : drawHCDCharts,
@@ -25,6 +30,7 @@ drawChartFunctions = {
     "Voltage_Current" : drawVoltage_CurrentCharts
 }
 
+//uplink function
 function send_uplink(){
     console.log($('#utf8id').val())
     $.ajax({
@@ -57,6 +63,7 @@ function send_uplink(){
     });
 }
 
+//tab functionallity
 function openTab(evt, tabName){
     var i, tabcontent, tablinks;
 
@@ -84,11 +91,13 @@ function openTab(evt, tabName){
         drawChartFunctions[tabName]();
 }
 
+//draw the main chart (Legacy)
 function drawMainCharts(){
     // var main_chart = new google.visualization.LineChart(document.getElementById('chart_main'))
     // main_chart.draw(chart_main_data, chart_main_options)
 }
 
+//draw the horizontal and compas data charts
 function drawHCDCharts(){
     var H1_chart = new google.visualization.LineChart(document.getElementById('chart_H1'))
     var H2_chart = new google.visualization.LineChart(document.getElementById('chart_H2'))
@@ -104,6 +113,7 @@ function drawHCDCharts(){
     CZ_chart.draw(chart_CZ_data, chart_CZ_options)
 }
 
+//draw the probe data charts
 function drawProbeCharts(){
     var V1C_chart = new google.visualization.LineChart(document.getElementById('chart_V1C'))
     var V2C_chart = new google.visualization.LineChart(document.getElementById('chart_V2C'))
@@ -117,6 +127,7 @@ function drawProbeCharts(){
     VD_chart.draw(chart_VD_data, chart_VD_options)
 }
 
+//draw the locaiton information charts
 function drawLocationCharts(){
     var lat_chart = new google.visualization.LineChart(document.getElementById('chart_lat'))
     var long_chart = new google.visualization.LineChart(document.getElementById('chart_long'))
@@ -133,6 +144,7 @@ function drawLocationCharts(){
 
 }
 
+//draw the temperature data charts
 function drawTemperatureCharts(){
     var alt_temp_chart = new google.visualization.LineChart(document.getElementById('chart_alt_temp'))
     var batt_temp_chart = new google.visualization.LineChart(document.getElementById('chart_batt_temp'))
@@ -152,6 +164,7 @@ function drawTemperatureCharts(){
     RB_temp_chart.draw(chart_RB_temp_data, chart_RB_temp_options)
 }
 
+//draw the voltage and current charts
 function drawVoltage_CurrentCharts(){
     var positive_7V_Volts_chart = new google.visualization.LineChart(document.getElementById('chart_positive_7V_volts'))
     var negative_7V_Volts_chart = new google.visualization.LineChart(document.getElementById('chart_negative_7V_volts'))
@@ -165,6 +178,7 @@ function drawVoltage_CurrentCharts(){
     current_3V3_chart.draw(chart_3V3_current_data, chart_3V3_current_options)
 }
 
+//async update
 function getNewPackets(){
     $.ajax({
         url : "/getUpdate/",

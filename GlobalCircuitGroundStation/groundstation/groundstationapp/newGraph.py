@@ -1,3 +1,5 @@
+# Some views used in groundstation
+
 from django.shortcuts import render
 
 from graphos.sources.simple import SimpleDataSource
