@@ -14,7 +14,8 @@ The homepage is simple but offers navigation to necessary functionalities.
 
 ### Features
 #### Dashboard Navigation
-Select the desired mcuID and the dashboard buttons will bring you to the cooresponding dashboard
+Select the desired mcuID and the dashboard buttons will bring you to the cooresponding dashboard.
+The secondary dashboard link acts as a backup in case gps time data is lost.
 
 #### GPS Map
 The GPS map offers a way to monitor the location of devices in flight.
@@ -72,3 +73,19 @@ The voltage and current tab contains graphs showing book keeping values regaring
 The advanced tab is very similar to the main tab but contains agregate data in place of some other informaiton.
 #### Uplink
 The uplink tab is the main way of sending commands to the device in flight in order to drop ballasts or cutdown the device.
+
+---
+
+## GPS Map
+The GPS map offers a more visual way to track the location of the device in flight.
+On the right of the map are some controls.
+The map is limited to 400 datapoints to avoid timeout issues.
+
+### Time Frame Control
+The time frame control allows the user to choose what time to start from.
+
+### Packet MCU ID
+The packet mcuID control allows the user to filter by mcuID
+
+### Iridium IMEI
+The iridium IMEI controll allows the user to filter by IMEI
